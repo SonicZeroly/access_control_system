@@ -210,11 +210,11 @@ void EXTI4_IRQHandler(void)
 }
 
 #define TOUCH_DEBOUNCE_TIME	500		//500ms·À¶¶¼ä¸ô
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if(GPIO_Pin == GPIO_PIN_4){
-		Touch_Falling_PIT();
-	}
-}
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+//	if(GPIO_Pin == GPIO_PIN_4){
+////		Touch_Falling_PIT();
+//	}
+//}
 
 void TIM6_DAC_IRQHandler(void){
 	HAL_TIM_IRQHandler(&htim6);
@@ -229,7 +229,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		lv_tick_inc(1);
 	}
 	else if(htim == &htim7){
-		Touch_Process();
+		tp_dev.scan();
 	}
 }
 /* USER CODE END 1 */

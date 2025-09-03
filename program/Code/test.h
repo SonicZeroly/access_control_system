@@ -8,6 +8,6 @@ void Touch_Adjust_Test(void);
 void Touch_Test(void);
 void LCD_Direction_Test(void);
 void LCD_Touch_Drawing(void);
-
+void Touch_Pen_Test(void);
 #endif 
 

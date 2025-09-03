@@ -37,6 +37,7 @@ access_control_system\main.o: ../Core/Inc/gpio.h
 access_control_system\main.o: ..\Code\BSP\dwt.h
 access_control_system\main.o: ..\Code\lcd.h
 access_control_system\main.o: ..\Code\touch.h
+access_control_system\main.o: ..\Code\BSP\ft6336.h
 access_control_system\main.o: ..\Code\BSP\usart.h
 access_control_system\main.o: ..\Code\BSP\tim.h
 access_control_system\main.o: ..\Code\BSP\W25QXX.h

@@ -3,66 +3,65 @@
 
 #include "main.h"
 
+#define u8	uint8_t
+#define u16 uint16_t
+
 /*************引脚分配*****************/
-#define LCD_CS_PORT		GPIOD
-#define LCD_CS_PIN		GPIO_PIN_7
+#define LCD_CS_PORT		GPIOA
+#define LCD_CS_PIN		GPIO_PIN_3
+#define LCD_RS_PORT		GPIOA
+#define LCD_RS_PIN		GPIO_PIN_2
+#define LCD_CLK_PORT		GPIOA
+#define LCD_CLK_PIN		GPIO_PIN_5
+#define LCD_MISO_PORT		GPIOA
+#define LCD_MISO_PIN		GPIO_PIN_6
+#define LCD_MOSI_PORT		GPIOA
+#define LCD_MOSI_PIN		GPIO_PIN_7
+#define LCD_RST_PORT	GPIOA
+#define LCD_RST_PIN		GPIO_PIN_4
+#define LCD_LED_PORT	GPIOA
+#define LCD_LED_PIN		GPIO_PIN_1	//背光控制引脚
 
-#define LCD_RS_PORT		GPIOD
-#define LCD_RS_PIN		GPIO_PIN_13
+/*************************************/
 
-#define LCD_WR_PORT		GPIOD
-#define LCD_WR_PIN		GPIO_PIN_5
+#define LCD_LED_ON		HAL_GPIO_WritePin(LCD_LED_PORT, LCD_LED_PIN, GPIO_PIN_SET);
+#define LCD_LED_OFF		HAL_GPIO_WritePin(LCD_LED_PORT, LCD_LED_PIN, GPIO_PIN_RESET);
 
-#define LCD_RD_PORT		GPIOD
-#define LCD_RD_PIN		GPIO_PIN_4
+#define GPIO_TYPE GPIOA		 
 
-#define LCD_RST_PORT	GPIOD
-#define LCD_RST_PIN		GPIO_PIN_6
+#define	LCD_CS_SET  GPIO_TYPE->BSRR = LCD_CS_PIN    //片选端口  	PB11
+#define	LCD_RS_SET	GPIO_TYPE->BSRR = LCD_RS_PIN    //数据/命令  PB10	  
+#define	LCD_RST_SET	GPIO_TYPE->BSRR = LCD_RST_PIN    //复位			PB12
+		    
+#define	LCD_CS_CLR  GPIO_TYPE->BSRR = (LCD_CS_PIN<<16)     //片选端口  	PB11
+#define	LCD_RS_CLR	GPIO_TYPE->BSRR = (LCD_RS_PIN<<16)     //数据/命令  PB10	 
+#define	LCD_RST_CLR	GPIO_TYPE->BSRR = (LCD_RST_PIN<<16)    //复位			  PB12	
 
-#define LCD_BL_PORT		GPIOD
-#define LCD_BL_PIN		GPIO_PIN_8
-
-#define LCD_DB_PORT		GPIOE
-#define LCD_DB0_PORT	GPIOE
-#define LCD_DB0_PIN		GPIO_PIN_0
-#define LCD_DB1_PORT	GPIOE
-#define LCD_DB1_PIN		GPIO_PIN_1
-#define LCD_DB2_PORT	GPIOE
-#define LCD_DB2_PIN		GPIO_PIN_2
-#define LCD_DB3_PORT	GPIOE
-#define LCD_DB3_PIN		GPIO_PIN_3
-#define LCD_DB4_PORT	GPIOE
-#define LCD_DB4_PIN		GPIO_PIN_4
-#define LCD_DB5_PORT	GPIOE
-#define LCD_DB5_PIN		GPIO_PIN_5
-#define LCD_DB6_PORT	GPIOE
-#define LCD_DB6_PIN		GPIO_PIN_6
-#define LCD_DB7_PORT	GPIOE
-#define LCD_DB7_PIN		GPIO_PIN_7
-#define LCD_DB8_PORT	GPIOE
-#define LCD_DB8_PIN		GPIO_PIN_8
-#define LCD_DB9_PORT	GPIOE
-#define LCD_DB9_PIN		GPIO_PIN_9
-#define LCD_DB10_PORT	GPIOE
-#define LCD_DB10_PIN	GPIO_PIN_10
-#define LCD_DB11_PORT	GPIOE
-#define LCD_DB11_PIN	GPIO_PIN_11
-#define LCD_DB12_PORT	GPIOE
-#define LCD_DB12_PIN	GPIO_PIN_12
-#define LCD_DB13_PORT	GPIOE
-#define LCD_DB13_PIN	GPIO_PIN_13
-#define LCD_DB14_PORT	GPIOE
-#define LCD_DB14_PIN	GPIO_PIN_14
-#define LCD_DB15_PORT	GPIOE
-#define LCD_DB15_PIN	GPIO_PIN_15
-
-//PE0~15,作为数据线
-#define DATAOUT(x) 	LCD_DB_PORT->ODR=x; //数据输出
-#define DATAIN     	LCD_DB_PORT->IDR;   //数据输入
-
+#define USE_HORIZONTAL  	 0//定义液晶屏顺时针旋转方向 	0-0度旋转，1-90度旋转，2-180度旋转，3-270度旋转
+  
 //定义LCD的尺寸
 #define LCD_W 240
 #define LCD_H 320
+
+//LCD重要参数集
+typedef struct  
+{										    
+	u16 width;			//LCD 宽度
+	u16 height;			//LCD 高度
+	u16 id;				//LCD ID
+	u8  dir;			//横屏还是竖屏控制：0，竖屏；1，横屏。	
+	u16	 wramcmd;		//开始写gram指令
+	u16  rramcmd;   	//开始读gram指令
+	u16  setxcmd;		//设置x坐标指令
+	u16  setycmd;		//设置y坐标指令	 
+}_lcd_dev; 	
+
+//LCD参数
+extern _lcd_dev lcddev;	//管理LCD重要参数
+
+//TFTLCD部分外要调用的函数		   
+extern u16  POINT_COLOR;//默认红色    
+extern u16  BACK_COLOR; //背景颜色.默认为白色   	
 
 //画笔颜色
 #define WHITE       0xFFFF
@@ -92,75 +91,36 @@
 
 #define LGRAYBLUE      	0XA651 //浅灰蓝色(中间层颜色)
 #define LBBLUE          0X2B12 //浅棕蓝色(选择条目的反色)
-
-#define LCD_LED_ON		HAL_GPIO_WritePin(LCD_BL_PORT, LCD_BL_PIN, GPIO_PIN_SET);
-#define LCD_LED_OFF		HAL_GPIO_WritePin(LCD_BL_PORT, LCD_BL_PIN, GPIO_PIN_RESET);
-
-//GPIO置位（拉高），BSRR寄存器低16位设置引脚高电平
-#define	LCD_CS_SET 	LCD_CS_PORT->BSRR = LCD_CS_PIN
-#define LCD_RS_SET	LCD_RS_PORT->BSRR = LCD_RS_PIN
-#define LCD_RST_SET	LCD_RST_PORT->BSRR = LCD_RST_PIN
-#define LCD_WR_SET	LCD_WR_PORT->BSRR = LCD_WR_PIN
-#define LCD_RD_SET	LCD_RD_PORT->BSRR = LCD_RD_PIN
-
-//GPIO复位（拉低），BSRR寄存器高16位设置引脚低电平
-#define	LCD_CS_RESET 	LCD_CS_PORT->BSRR = (LCD_CS_PIN << 16)
-#define LCD_RS_RESET	LCD_RS_PORT->BSRR = (LCD_RS_PIN << 16)
-#define LCD_RST_RESET	LCD_RST_PORT->BSRR = (LCD_RST_PIN << 16)
-#define LCD_WR_RESET	LCD_WR_PORT->BSRR = (LCD_WR_PIN << 16)
-#define LCD_RD_RESET	LCD_RD_PORT->BSRR = (LCD_RD_PIN << 16)
-
-//用户配置
-#define USE_HORIZONTAL  	0 //定义液晶屏顺时针旋转方向 	0-0度旋转，1-90度旋转，2-180度旋转，3-270度旋转
-#define USE_VERTICAL  	    1 
-#define LCD_USE8BIT_MODEL   0	//定义数据总线是否使用8位模式 0,使用16位模式.1,使用8位模式
-
-//LCD重要参数集
-typedef struct  
-{										    
-	uint16_t 	width;			//LCD 宽度
-	uint16_t 	height;			//LCD 高度
-	uint16_t 	id;				  //LCD ID
-	uint8_t  	dir;			  //横屏还是竖屏控制：0，竖屏；1，横屏。	
-	uint16_t	wramcmd;	//开始写gram指令
-	uint16_t  	rramcmd;   //开始读gram指令
-	uint16_t  	setxcmd;		//设置x坐标指令
-	uint16_t  	setycmd;		//设置y坐标指令	 
-}_lcd_dev; 	
-
-extern _lcd_dev lcddev;
-extern uint16_t  POINT_COLOR;//默认黑色  
-extern uint16_t  BACK_COLOR; //背景颜色.默认为白色
 	    															  
 void LCD_Init(void);
-void LCD_write(uint16_t VAL);
-uint16_t LCD_read(void);
-void LCD_Clear(uint16_t Color);	 
-void LCD_SetCursor(uint16_t Xpos, uint16_t Ypos);
-void LCD_DrawPoint(uint16_t x,uint16_t y);//画点
-uint16_t  LCD_ReadPoint(uint16_t x,uint16_t y); //读点	   
-void LCD_SetWindows(uint16_t xStar, uint16_t yStar,uint16_t xEnd,uint16_t yEnd);
-uint16_t LCD_RD_DATA(void);//读取LCD数据								    
-void LCD_WriteReg(uint16_t LCD_Reg, uint16_t LCD_RegValue);
-void LCD_WR_REG(uint16_t data);
-void LCD_WR_DATA(uint16_t data);
-void LCD_ReadReg(uint16_t LCD_Reg,uint8_t *Rval,int n);
+void LCD_DisplayOn(void);
+void LCD_DisplayOff(void);
+void LCD_Clear(u16 Color);	 
+void LCD_SetCursor(u16 Xpos, u16 Ypos);
+void LCD_DrawPoint(u16 x,u16 y);//画点
+u16  LCD_ReadPoint(u16 x,u16 y); //读点
+void LCD_DrawLine(u16 x1, u16 y1, u16 x2, u16 y2);
+void LCD_DrawRectangle(u16 x1, u16 y1, u16 x2, u16 y2);		   
+void LCD_SetWindows(u16 xStar, u16 yStar,u16 xEnd,u16 yEnd);
+
+u8 LCD_RD_DATA(void);//读取LCD数据									    
+void LCD_WriteReg(u8 LCD_Reg, u16 LCD_RegValue);
+void LCD_WR_DATA(u8 data);
+u8 LCD_ReadReg(u8 LCD_Reg);
 void LCD_WriteRAM_Prepare(void);
-void LCD_ReadRAM_Prepare(void);   
-void Lcd_WriteData_16Bit(uint16_t Data);
-uint16_t Lcd_ReadData_16Bit(void);
-void LCD_direction(uint8_t direction );
-uint16_t Color_To_565(uint8_t r, uint8_t g, uint8_t b);
-uint16_t LCD_Read_ID(void);
+void LCD_WriteRAM(u16 RGB_Code);
+u16 LCD_ReadRAM(void);		   
+u16 LCD_BGR2RGB(u16 c);
+void LCD_SetParam(void);
+void Lcd_WriteData_16Bit(u16 Data);
+void LCD_direction(u8 direction );
+u16 LCD_Read_ID(void);		
 
-void LCD_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t color);
+/******应用层*******/
+void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 color);
 void LCD_ColorFill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t* color_p);
-void LCD_DrawLine(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend);
-void LCD_Draw_Circle(uint16_t x0, uint16_t y0, uint8_t r);
-void LCD_ShowChar(uint16_t x,uint16_t y,uint16_t fc, uint16_t bc, uint8_t num, uint8_t size, uint8_t mode);
-void LCD_ShowString(uint16_t x,uint16_t y,uint8_t size, uint8_t *p,uint8_t mode);
-void LCD_ShowNum(uint16_t x,uint16_t y,uint32_t num,uint8_t len,uint8_t size);
 
-
-#endif 
-
+void LCD_DrawLine2(u16 x1, u16 y1, u16 x2, u16 y2, u16 size, u16 color);
+void LCD_ShowString(u16 x,u16 y,u8 size,u8 *p,u8 mode);
+void Gui_StrCenter(u16 x, u16 y, u16 fc, u16 bc, u8 *str,u8 size,u8 mode);
+#endif  

@@ -11,6 +11,7 @@
 #include "test.h"
 #include "dwt.h"
 
+#if 0
 void DrawTestPage(uint8_t *str)
 {
 	//绘制固定栏up
@@ -94,4 +95,64 @@ void LCD_Touch_Drawing(void){
 			LCD_DrawPoint(Pen_Point.X, Pen_Point.Y);
 		}
 	}	
+}
+
+#endif
+
+void DrawTestPage(u8 *str){
+	//绘制固定栏up
+	LCD_Clear(WHITE);
+	LCD_Fill(0,0,lcddev.width,20,BLUE);
+	//绘制固定栏down
+	LCD_Fill(0,lcddev.height-20,lcddev.width,lcddev.height,BLUE);
+	POINT_COLOR=WHITE;
+	Gui_StrCenter(0,2,WHITE,BLUE,str,16,1);//居中显示
+	Gui_StrCenter(0,lcddev.height-18,WHITE,BLUE,"http://www.lcdwiki.com",16,1);//居中显示
+	//绘制测试区域
+	//LCD_Fill(0,20,lcddev.width,lcddev.height-20,WHITE);
+}
+
+void Touch_Pen_Test(void)
+{
+//	u8 i=0,j=0;	 
+ 	u16 lastpos[2];		//最后一次的数据 
+	DrawTestPage("测试12:触摸PEN测试");
+	LCD_ShowString(lcddev.width-32,2,16,"RST",1);//显示清屏区域
+	POINT_COLOR=RED;//设置画笔蓝色 //清除
+	while(1)
+	{
+		//j++;
+		tp_dev.scan();
+		//for(t=0;t<CTP_MAX_TOUCH;t++)//最多5点触摸
+		//{
+			if((tp_dev.sta)&(1<<0))//判断是否有点触摸？
+			{
+				if(tp_dev.x[0]<lcddev.width&&tp_dev.y[0]<lcddev.height)//在LCD范围内
+				{
+					if(lastpos[0]==0XFFFF)
+					{
+						lastpos[0] = tp_dev.x[0];
+						lastpos[1] = tp_dev.y[0];
+					}
+					if(tp_dev.x[0]>(lcddev.width-32)&&tp_dev.y[0]<18)
+					{
+							//if(j>1) //防止点击一次，多次清屏
+							//{
+							//	continue;
+							//}
+							tp_dev.x[0]=0xFFFF;
+							tp_dev.x[0]=0xFFFF;
+							DrawTestPage("测试12:触摸PEN测试");
+							LCD_ShowString(lcddev.width-32,2,16,"RST",1);//显示清屏区域
+							POINT_COLOR=RED;//设置画笔蓝色 //清除
+					}
+					else
+					{
+							LCD_DrawLine2(lastpos[0],lastpos[1],tp_dev.x[0],tp_dev.y[0],2,RED);//画线
+					}
+					lastpos[0]=tp_dev.x[0];
+					lastpos[1]=tp_dev.y[0];
+				}
+			}else lastpos[0]=0XFFFF;
+	} 
 }

@@ -36,4 +36,5 @@ access_control_system\lcd.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\std
 access_control_system\lcd.o: ..\Code\lcd.h
 access_control_system\lcd.o: ..\Code\BSP\dwt.h
 access_control_system\lcd.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdlib.h
+access_control_system\lcd.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\string.h
 access_control_system\lcd.o: ..\Code\font.h

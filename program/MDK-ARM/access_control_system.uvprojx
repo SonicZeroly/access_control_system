@@ -518,6 +518,26 @@
               <FileType>5</FileType>
               <FilePath>..\Code\BSP\w25qxx.h</FilePath>
             </File>
+            <File>
+              <FileName>ctpiic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\BSP\ctpiic.c</FilePath>
+            </File>
+            <File>
+              <FileName>ctpiic.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\BSP\ctpiic.h</FilePath>
+            </File>
+            <File>
+              <FileName>ft6336.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\BSP\ft6336.c</FilePath>
+            </File>
+            <File>
+              <FileName>ft6336.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\BSP\ft6336.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

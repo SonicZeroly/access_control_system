@@ -35,6 +35,7 @@ access_control_system\test.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_
 access_control_system\test.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 access_control_system\test.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdio.h
 access_control_system\test.o: ..\Code\touch.h
+access_control_system\test.o: ..\Code\BSP\ft6336.h
 access_control_system\test.o: ..\Code\BSP\w25qxx.h
 access_control_system\test.o: ..\Code\test.h
 access_control_system\test.o: ..\Code\BSP\dwt.h

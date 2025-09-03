@@ -163,3 +163,5 @@ access_control_system\lv_port_indev.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32
 access_control_system\lv_port_indev.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 access_control_system\lv_port_indev.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 access_control_system\lv_port_indev.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdio.h
+access_control_system\lv_port_indev.o: ..\Code\BSP\ft6336.h
+access_control_system\lv_port_indev.o: ..\Code\lcd.h

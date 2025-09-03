@@ -82,19 +82,25 @@ int main(void)
 
 	MX_GPIO_Init();
 	MX_TIM6_Init();
-	MX_TIM7_Init();
+	
 	bsp_InitDWT();
 	UART1_Init();
-//	W25QXX_Init();
+//	W25QXX_Init();	
+//	LCD_Init();
+//	TP_Init();
+	
+//	Touch_Pen_Test();
 	
 //	Touch_Test();
-	Touch_Adjust_Test();
+//	Touch_Adjust_Test();
 //	LCD_Direction_Test();
 //	LCD_Touch_Drawing();
 	
 	lv_init();
 	lv_port_disp_init();
 	lv_port_indev_init();
+	
+	MX_TIM7_Init();
 	
 	create_password_ui(lv_scr_act());	//以active_screen作为父级
 

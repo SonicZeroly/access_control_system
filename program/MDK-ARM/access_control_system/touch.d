@@ -35,6 +35,7 @@ access_control_system\touch.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal
 access_control_system\touch.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 access_control_system\touch.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdio.h
 access_control_system\touch.o: ..\Code\touch.h
+access_control_system\touch.o: ..\Code\BSP\ft6336.h
 access_control_system\touch.o: ..\Code\BSP\dwt.h
 access_control_system\touch.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\math.h
 access_control_system\touch.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdlib.h
