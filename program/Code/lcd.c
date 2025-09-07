@@ -31,16 +31,15 @@ SPI_HandleTypeDef hspi1;
   */
 static void SPI_SetSpeed(SPI_HandleTypeDef *hspi, u8 SpeedSet)
 {
-    /* 先停止SPI外设 */
-    __HAL_SPI_DISABLE(hspi);
-    
     /* 修改预分频器配置 */
-    if(SpeedSet == 1) // 高速
+    if(SpeedSet == 1 && hspi->Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_2) // 高速
     {
+		__HAL_SPI_DISABLE(hspi);
         hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // Fsck = Fpclk/2
     }
-    else // 低速
+    else if(hspi->Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_32)	// 低速
     {
+		__HAL_SPI_DISABLE(hspi);
         hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; // Fsck = Fpclk/16
     }
     
@@ -81,6 +80,7 @@ void LCD_WR_DATA(u8 data)
 	LCD_RS_SET;
 	u8 rx_dat = 0;
 	u8 tx_dat = data;
+	SPI_SetSpeed(&hspi1, 1);
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
     LCD_CS_SET;
 }
@@ -93,7 +93,7 @@ u8 LCD_RD_DATA(void)
 	LCD_RS_SET;
 	SPI_SetSpeed(&hspi1, 0);
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
-	SPI_SetSpeed(&hspi1, 1);
+//	SPI_SetSpeed(&hspi1, 1);
 	LCD_CS_SET;
 	return rx_dat;
 }
@@ -150,6 +150,7 @@ void Lcd_WriteData_16Bit(u16 Data)
 	
 	u8 tx_dat = Data>>8;
 	u8 rx_dat = 0;
+	SPI_SetSpeed(&hspi1, 1);
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
 	tx_dat = Data;
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
@@ -180,7 +181,7 @@ u16 Lcd_ReadData_16Bit(void)
 	//g >>= 8;
 	//b >>= 8;
 	r = rx_dat[1], g = rx_dat[2], b = rx_dat[3];
-	SPI_SetSpeed(&hspi1, 1);
+//	SPI_SetSpeed(&hspi1, 1);
 	LCD_CS_SET;
 	return Color_To_565(r, g, b);
 }

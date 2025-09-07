@@ -36,7 +36,11 @@ access_control_system\stm32f4xx_it.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\in
 access_control_system\stm32f4xx_it.o: ../Core/Inc/stm32f4xx_it.h
 access_control_system\stm32f4xx_it.o: ..\Code\touch.h
 access_control_system\stm32f4xx_it.o: ..\Code\BSP\ft6336.h
+access_control_system\stm32f4xx_it.o: ..\Code\process.h
+access_control_system\stm32f4xx_it.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdbool.h
 access_control_system\stm32f4xx_it.o: ..\Code\BSP\tim.h
+access_control_system\stm32f4xx_it.o: ..\Code\BSP\RC522.h
+access_control_system\stm32f4xx_it.o: ..\Code\BSP\as608.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\lvgl.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/lv_log.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/../lv_conf_internal.h
@@ -45,7 +49,6 @@ access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\examples
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/lv_types.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/lv_timer.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/../hal/lv_hal_tick.h
-access_control_system\stm32f4xx_it.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdbool.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/lv_math.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/lv_mem.h
 access_control_system\stm32f4xx_it.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\string.h

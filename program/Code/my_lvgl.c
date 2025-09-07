@@ -7,6 +7,10 @@
   */
 #include "my_lvgl.h"
 #include "lvgl.h"
+#include "process.h"
+
+uint8_t enterword[MAX_LEN] = {0};			//输入
+extern uint8_t open_flag;
 
 // 键盘按钮回调函数
 static void keyboard_cb(lv_event_t * e)
@@ -14,16 +18,25 @@ static void keyboard_cb(lv_event_t * e)
     lv_obj_t * target = lv_event_get_target(e);
     lv_obj_t * textarea = (lv_obj_t *)lv_event_get_user_data(e);
     const char * text = lv_btnmatrix_get_btn_text(target, lv_btnmatrix_get_selected_btn(target));
+	
+	static int index = 0;
     
     if(strcmp(text, LV_SYMBOL_BACKSPACE) == 0) {
         lv_textarea_del_char(textarea);
     }
     else if(strcmp(text, LV_SYMBOL_NEW_LINE) == 0) {
         // 这里可以添加按下Enter键后的处理逻辑
-        LV_LOG_USER("Password entered");
+		if(index == PASSWORD_LEN){
+			if(memcmp(enterword, password, PASSWORD_LEN) == 0){
+				open_flag = 1;
+			}
+		}
     }
-    else {
-        lv_textarea_add_text(textarea, "*");
+    else{
+        lv_textarea_add_text(textarea, text);
+		if(index < MAX_LEN){
+			enterword[index++] = *text-'0';
+		}
     }
 }
 
@@ -54,7 +67,7 @@ void create_password_ui(lv_obj_t * parent)
     lv_textarea_set_text(pwd_ta, "");
     lv_textarea_set_password_mode(pwd_ta, true);
     lv_textarea_set_one_line(pwd_ta, true);	//设置文本区域为单行模式
-    lv_textarea_set_max_length(pwd_ta, 16);
+    lv_textarea_set_max_length(pwd_ta, 8);
     lv_obj_set_style_bg_color(pwd_ta, lv_color_hex(0x34495e), 0);
     lv_obj_set_style_text_color(pwd_ta, lv_color_white(), 0);
     lv_obj_set_style_border_width(pwd_ta, 2, 0);	//边框厚度
@@ -73,7 +86,7 @@ void create_password_ui(lv_obj_t * parent)
     lv_btnmatrix_set_map(btnm, btnm_map);
     lv_obj_set_size(btnm, 240, 130);
     lv_obj_align(btnm, LV_ALIGN_TOP_MID, 0, 180);
-    lv_obj_add_event_cb(btnm, keyboard_cb, LV_EVENT_VALUE_CHANGED, pwd_ta);
+    lv_obj_add_event_cb(btnm, keyboard_cb, LV_EVENT_VALUE_CHANGED, pwd_ta);		// 关键：将键盘与文本区域关联
     
     // 设置键盘样式
     lv_obj_set_style_bg_color(btnm, lv_color_hex(0x34495e), 0);

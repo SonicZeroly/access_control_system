@@ -29,7 +29,9 @@
 #include "tim.h"
 #include "W25QXX.h"
 #include "test.h"
+#include "RC522.h"
 #include "my_lvgl.h"
+#include "process.h"
 
 #include "lvgl.h"
 #include "lv_port_disp.h"
@@ -74,6 +76,8 @@ void SystemClock_Config(void);
   * @retval int
   */
 extern uint16_t touch_res1, touch_res2;
+extern uint8_t enterword[];
+extern uint8_t open_flag;
 
 int main(void)
 {
@@ -85,22 +89,30 @@ int main(void)
 	
 	bsp_InitDWT();
 	UART1_Init();
-//	W25QXX_Init();	
+	W25QXX_Init();	
+	
+//	RC522_Init();
+//	RC522_Rese();
+//	RC522_Config_Type();
+
 //	LCD_Init();
 //	TP_Init();
 	
 //	Touch_Pen_Test();
-	
 //	Touch_Test();
 //	Touch_Adjust_Test();
 //	LCD_Direction_Test();
 //	LCD_Touch_Drawing();
+//	printf("the 123\r\n");
+//	RC522_Test();
+//	AS608_Test();
+	verify_card_test();
 	
 	lv_init();
 	lv_port_disp_init();
 	lv_port_indev_init();
 	
-	MX_TIM7_Init();
+	MX_TIM7_Init();	//里面调用了I2C函数，需要放在初始化后
 	
 	create_password_ui(lv_scr_act());	//以active_screen作为父级
 
@@ -109,11 +121,19 @@ int main(void)
 		bsp_Delayms(5);
 		lv_timer_handler();
 		
-//		printf("%d, %f, %d, %f, %d\n", lcddev.dir, Pen_Point.xfac, Pen_Point.xoff, Pen_Point.yfac, Pen_Point.yoff);
+//		printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", open_flag,  enterword[0], enterword[1], enterword[2],
+//				enterword[3], enterword[4], enterword[5], enterword[6], enterword[7]);
 		
-//		printf("%d\r\n", id_ret);
+//		if(pcd_int_flag == 1){
+//			PCD_Scan();
+//			pcd_int_flag = 0;
+//		}
 		
-
+		if(open_flag == 1){
+			
+			bsp_Delayms(2000);
+			open_flag = 0;
+		}
 	}
 }
 

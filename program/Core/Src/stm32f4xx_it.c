@@ -23,7 +23,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "touch.h"
+#include "process.h"
 #include "tim.h"
+#include "RC522.h"
+#include "as608.h"
 
 #include "lvgl.h"
 /* USER CODE END Includes */
@@ -203,18 +206,31 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
-uint8_t it_cnt = 0;
+//uint8_t it_cnt = 0;
 void EXTI4_IRQHandler(void)
 {
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
 }
 
-#define TOUCH_DEBOUNCE_TIME	500		//500ms·À¶¶¼ä¸ô
-//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-//	if(GPIO_Pin == GPIO_PIN_4){
-////		Touch_Falling_PIT();
-//	}
-//}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == GPIO_PIN_4){
+		if(HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_4) == 1){
+			finger_status = 1;
+		}
+	}
+}
+
+void DMA1_Stream5_IRQHandler(void)
+{
+	HAL_DMA_IRQHandler(&hdma_usart2_rx);
+}
+
+void USART2_IRQHandler(void)
+{
+	HAL_UART_IRQHandler(&huart2);
+	HAL_UART_RxIdleCallback(&huart2);
+}
+
 
 void TIM6_DAC_IRQHandler(void){
 	HAL_TIM_IRQHandler(&htim6);

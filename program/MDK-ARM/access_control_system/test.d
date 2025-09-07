@@ -39,3 +39,7 @@ access_control_system\test.o: ..\Code\BSP\ft6336.h
 access_control_system\test.o: ..\Code\BSP\w25qxx.h
 access_control_system\test.o: ..\Code\test.h
 access_control_system\test.o: ..\Code\BSP\dwt.h
+access_control_system\test.o: ..\Code\BSP\RC522.h
+access_control_system\test.o: ..\Code\BSP\as608.h
+access_control_system\test.o: ..\Code\process.h
+access_control_system\test.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdbool.h

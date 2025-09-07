@@ -42,6 +42,7 @@ access_control_system\main.o: ..\Code\BSP\usart.h
 access_control_system\main.o: ..\Code\BSP\tim.h
 access_control_system\main.o: ..\Code\BSP\W25QXX.h
 access_control_system\main.o: ..\Code\test.h
+access_control_system\main.o: ..\Code\BSP\RC522.h
 access_control_system\main.o: ..\Code\my_lvgl.h
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\lvgl.h
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/misc/lv_log.h
@@ -171,5 +172,6 @@ access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widget
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widgets/led/lv_led.h
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widgets/imgbtn/lv_imgbtn.h
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widgets/span/lv_span.h
+access_control_system\main.o: ..\Code\process.h
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_disp.h
 access_control_system\main.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_indev.h

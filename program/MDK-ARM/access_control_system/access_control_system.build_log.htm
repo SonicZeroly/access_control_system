@@ -22,19 +22,23 @@ Dialog DLL:      TCM.DLL V1.46.0.0
  
 <h2>Project:</h2>
 J:\my_project\00_my_practical_project\access_control_system\program\MDK-ARM\access_control_system.uvprojx
-Project File Date:  09/02/2025
+Project File Date:  09/07/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'J:\software\Keil_v5_32\ARM\ARMCC\Bin'
 Build target 'access_control_system'
-compiling main.c...
+compiling test.c...
 ..\Code\lcd.h(126): warning:  #1-D: last line of file ends without a newline
   #endif  
-../Core/Src/main.c: 1 warning, 0 errors
+..\Code\BSP\RC522.h(149): warning:  #1295-D: Deprecated declaration RC522_Config_Type - give arg types
+  void RC522_Config_Type();
+..\Code\test.c(285): warning:  #177-D: variable "card_id"  was declared but never referenced
+  	uint8_t card_id[4] = {0};
+..\Code\test.c: 3 warnings, 0 errors
 linking...
-Program Size: Code=156916 RO-data=18532 RW-data=636 ZI-data=59348  
+Program Size: Code=163020 RO-data=18532 RW-data=668 ZI-data=60108  
 FromELF: creating hex file...
-"access_control_system\access_control_system.axf" - 0 Error(s), 1 Warning(s).
+"access_control_system\access_control_system.axf" - 0 Error(s), 3 Warning(s).
 
 <h2>Software Packages used:</h2>
 

@@ -9,5 +9,9 @@ void Touch_Test(void);
 void LCD_Direction_Test(void);
 void LCD_Touch_Drawing(void);
 void Touch_Pen_Test(void);
+
+void RC522_Test(void);
+void AS608_Test(void);
+void verify_card_test(void);
 #endif 
 

@@ -473,6 +473,16 @@
               <FileType>5</FileType>
               <FilePath>..\Code\my_lvgl.h</FilePath>
             </File>
+            <File>
+              <FileName>process.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\process.c</FilePath>
+            </File>
+            <File>
+              <FileName>process.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\process.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -537,6 +547,36 @@
               <FileName>ft6336.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Code\BSP\ft6336.h</FilePath>
+            </File>
+            <File>
+              <FileName>RC522.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\BSP\RC522.c</FilePath>
+            </File>
+            <File>
+              <FileName>RC522.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\BSP\RC522.h</FilePath>
+            </File>
+            <File>
+              <FileName>as608.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\BSP\as608.c</FilePath>
+            </File>
+            <File>
+              <FileName>as608.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\BSP\as608.h</FilePath>
+            </File>
+            <File>
+              <FileName>data_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\BSP\data_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>data_flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\BSP\data_flash.h</FilePath>
             </File>
           </Files>
         </Group>

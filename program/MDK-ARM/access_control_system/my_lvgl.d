@@ -162,3 +162,4 @@ access_control_system\my_lvgl.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/wid
 access_control_system\my_lvgl.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widgets/led/lv_led.h
 access_control_system\my_lvgl.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widgets/imgbtn/lv_imgbtn.h
 access_control_system\my_lvgl.o: ..\Middlewares\LVGL\LVGL_SRC\lvgl\src/extra/widgets/span/lv_span.h
+access_control_system\my_lvgl.o: ..\Code\process.h
