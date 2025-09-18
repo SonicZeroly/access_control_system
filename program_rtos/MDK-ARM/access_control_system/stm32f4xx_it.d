@@ -36,6 +36,7 @@ access_control_system\stm32f4xx_it.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\in
 access_control_system\stm32f4xx_it.o: ../Core/Inc/stm32f4xx_it.h
 access_control_system\stm32f4xx_it.o: ..\Code\BSP\as608.h
 access_control_system\stm32f4xx_it.o: ..\Code\BSP\tim.h
+access_control_system\stm32f4xx_it.o: ..\Code\lcd.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\lvgl.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/misc/lv_log.h
 access_control_system\stm32f4xx_it.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/misc/../lv_conf_internal.h

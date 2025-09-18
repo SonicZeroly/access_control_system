@@ -6,9 +6,11 @@
 
 #if use_rtos==1
 #include "FreeRTOS.h"
+#include "queue.h"
 #include "semphr.h"
 
 extern SemaphoreHandle_t xSemaphore_FPflag;
+extern QueueHandle_t xQueue_State;
 #endif
 
 #define EXIT	0xFF
@@ -672,13 +674,15 @@ uint8_t as608_add_fingerprint(uint16_t PageID)
 {
 	uint8_t result;                                        //录入的结果
 	uint8_t add_stage = 1;                        //录入的阶段
+	int8_t temp = 0;
 	
 	while(add_stage != EXIT)
 	{
 		switch(add_stage)
 		{
 			//第一阶段 获取第一次指纹图像 并且生成特征图
-			case 1:
+			case 1:{
+
 				printf("请放置手指\r\n");
 				if(as608_detection_finger(800))        return 0x02;        //等待手指按下                        
 				result = PS_GetImage();        //获取指纹图像
@@ -686,8 +690,12 @@ uint8_t as608_add_fingerprint(uint16_t PageID)
 				result = PS_GenChar(CharBuffer1);//生成特征图        
 				if(result) return 1;
 				add_stage = 2;                //跳转到第二阶段
+#if use_rtos == 1
+				temp = 2;	//第一次识别指纹后
+				xQueueSend(xQueue_State, &temp, portMAX_DELAY);
+#endif
 				break;
-			
+			}
 			//第二阶段 获取第二次指纹图像 并且生成特征图
 			case 2:
 				printf("请再放置手指\r\n");

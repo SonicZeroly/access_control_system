@@ -61,7 +61,9 @@ extern _lcd_dev lcddev;	//管理LCD重要参数
 
 //TFTLCD部分外要调用的函数		   
 extern u16  POINT_COLOR;//默认红色    
-extern u16  BACK_COLOR; //背景颜色.默认为白色   	
+extern u16  BACK_COLOR; //背景颜色.默认为白色   
+
+extern SPI_HandleTypeDef hspi1;
 
 //画笔颜色
 #define WHITE       0xFFFF

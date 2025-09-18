@@ -34,6 +34,9 @@
 #include "my_lvgl.h"
 #include "tim.h"
 #include "touch.h"
+#include "my_ui.h"
+#include "lv_demos.h"
+#include "./widgets/lv_demo_widgets.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,7 +117,9 @@ int main(void)
 	lv_init();
 	lv_port_disp_init();
 	lv_port_indev_init();
-	page_manager_init(NULL);
+//	page_manager_init(NULL);
+	my_ui_init();
+	//lv_demo_widgets();
 	
 	MX_TIM7_Init();		//¥•∆¡÷‹∆⁄÷–∂œ
 

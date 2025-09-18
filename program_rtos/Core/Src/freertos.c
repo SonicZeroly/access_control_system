@@ -30,6 +30,7 @@
 #include "lvgl.h"
 #include "my_lvgl.h"
 #include "as608.h"
+#include "lcd.h"
 
 #include "semphr.h"
 #include "queue.h"
@@ -63,6 +64,8 @@ SemaphoreHandle_t xSemaphore_FPflag;	//和中断通信的信号量
 
 QueueHandle_t xQueue_PCDFlag;
 QueueHandle_t xQueue_FPFlag;
+
+QueueHandle_t xQueue_State;   //向ui_manager_t传送状态
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -118,6 +121,8 @@ void MX_FREERTOS_Init(void) {
   /* add queues, ... */
 	xQueue_PCDFlag = xQueueCreate(5, sizeof(pcd_flag_t));
 	xQueue_FPFlag = xQueueCreate(5, sizeof(fp_flag_t));
+
+  xQueue_State = xQueueCreate(5, sizeof(int8_t));
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -211,11 +216,11 @@ static void vTask_PCD(void *pvParameters){
 	pcd_flag_t flag = PCD_CHECK_EXIST;
 	while(1){
 		xQueueReceive(xQueue_PCDFlag, &flag, 10);
-		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
+//		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
 			pcd_scan(flag);
-			xSemaphoreGive(xMutex_SPI1);
+//			xSemaphoreGive(xMutex_SPI1);
 			vTaskDelay(50);
-		}
+//		}
 	}
 }
 
@@ -232,6 +237,7 @@ static void vTask_FP(void *pvParameters){
 //		}
 		
 		fp_scan(flag);
+		
 		vTaskDelay(50);
 	}
 }
@@ -240,14 +246,16 @@ static void vTask_FP(void *pvParameters){
   * @brief  UI显示处理任务函数
   * @retval 无
   */
+extern volatile uint8_t dma_complete;
 static void vTask_LVGL(void *pvParameters){
 	
 	while(1){
-		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
+		
+//		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
 			lv_timer_handler();
-			xSemaphoreGive(xMutex_SPI1);
+//			xSemaphoreGive(xMutex_SPI1);
 			vTaskDelay(5);		//如果有低优先级，一定要把延迟放外面（或者等待互斥量时间写大些）
-		}
+//		}
 	}
 }
 

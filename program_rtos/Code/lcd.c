@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "font.h"
+
+#define USE_DMA		1
   
 //管理LCD重要参数
 //默认为竖屏
@@ -22,6 +24,8 @@ u16 POINT_COLOR = 0x0000,BACK_COLOR = 0xFFFF;
 u16 DeviceCode;	 
 
 SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
 
 /**
   * @brief  动态设置SPI速度
@@ -31,6 +35,12 @@ SPI_HandleTypeDef hspi1;
   */
 static void SPI_SetSpeed(SPI_HandleTypeDef *hspi, u8 SpeedSet)
 {
+	if (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX_RX)
+    {
+        // 如果正在传输，等待完成
+        while (HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY);
+    }
+	
     /* 修改预分频器配置 */
     if(SpeedSet == 1 && hspi->Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_2) // 高速
     {
@@ -64,6 +74,7 @@ void LCD_WR_REG(u8 data)
 	u8 rx_dat = 0;
 	u8 tx_dat = data;
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
+	
 	LCD_CS_SET;	
 }
 
@@ -245,21 +256,50 @@ void LCD_Clear(u16 Color)
 ******************************************************************************/	
 void LCD_MspInit(void)
 {
-//	GPIO_InitTypeDef GPIO_InitStructure;
-//	      
-//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB ,ENABLE);
-//	
-//	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_12| GPIO_Pin_13|GPIO_Pin_14| GPIO_Pin_15;
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-//	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;   //推挽输出
-//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-//	GPIO_Init(GPIOB, &GPIO_InitStructure);
-//	LCD_LED_ON;  //点亮背光
 	
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	  /* GPIO Ports Clock Enable */
 	__HAL_RCC_GPIOA_CLK_ENABLE();
+#if USE_DMA == 1
+	__HAL_RCC_DMA2_CLK_ENABLE();
+	HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+	HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+	
+	hdma_spi1_tx.Instance = DMA2_Stream3;
+    hdma_spi1_tx.Init.Channel = DMA_CHANNEL_3;
+    hdma_spi1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_spi1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi1_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi1_tx.Init.Mode = DMA_NORMAL;
+    hdma_spi1_tx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_spi1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_spi1_tx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+    __HAL_LINKDMA(&hspi1,hdmatx,hdma_spi1_tx);
+	
+	hdma_spi1_rx.Instance = DMA2_Stream0;
+    hdma_spi1_rx.Init.Channel = DMA_CHANNEL_3;
+    hdma_spi1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_spi1_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi1_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi1_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi1_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi1_rx.Init.Mode = DMA_NORMAL;
+    hdma_spi1_rx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_spi1_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_spi1_rx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(&hspi1,hdmarx,hdma_spi1_rx);
+#endif
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_RESET);
@@ -294,7 +334,7 @@ void LCD_MspInit(void)
 	{
 		Error_Handler();
 	}
-	
+
 	LCD_LED_ON;
 }
 
@@ -560,7 +600,11 @@ void LCD_ColorFill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t* col
 	uint16_t i,j;			
 	uint16_t width=ex-sx+1; 		//得到填充的宽度
 	uint16_t height=ey-sy+1;		//高度
+	
+	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+	
 	LCD_SetWindows(sx,sy,ex,ey);//设置显示窗口
+	#if USE_DMA == 0
 	for(i=0;i<height;i++)
 	{
 		for(j=0;j<width;j++){
@@ -570,6 +614,27 @@ void LCD_ColorFill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t* col
 		}			
 	}
 	LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);//恢复窗口设置为全屏	
+	#else
+	uint32_t total_pixels  = width*height;
+	
+	LCD_CS_CLR;
+	LCD_RS_SET;
+	
+	//STM32是小端（Little-Endian） 架构
+	uint8_t* dma_buffer = (uint8_t*)color_p;
+	for (uint32_t i = 0; i < total_pixels; i++) {
+		uint8_t temp = dma_buffer[i*2];
+		dma_buffer[i*2] = dma_buffer[i*2 + 1];
+		dma_buffer[i*2 + 1] = temp;
+    }
+	
+	SPI_SetSpeed(&hspi1, 1);
+	HAL_SPI_Transmit_DMA(&hspi1, dma_buffer, total_pixels*2);
+//	
+//	LCD_CS_SET;	//到DMA传输结束中断再关闭
+//	LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);//恢复窗口设置为全屏	
+	#endif
+	
 }
 
 void GUI_DrawPoint(u16 x,u16 y,u16 color)

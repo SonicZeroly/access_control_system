@@ -1,12 +1,13 @@
 #include "RC522.h"
 #include "dwt.h"
 
-extern SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
 uint8_t pcd_int_flag = 0;
 
 void RC522_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	__HAL_RCC_GPIOC_CLK_ENABLE();	
+	__HAL_RCC_GPIOB_CLK_ENABLE();	
 	
 //	GPIO_InitStruct.Pin = GPIO_PIN_1;
 //	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -24,34 +25,34 @@ void RC522_Init(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 	
-    __HAL_RCC_SPI1_CLK_ENABLE();
-    GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+    __HAL_RCC_SPI2_CLK_ENABLE();
+    GPIO_InitStruct.Pin = RC522_SCK_PIN|RC522_MOSI_PIN|RC522_MISO_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);	
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);	
 	
-	hspi1.Instance = SPI1;
-	hspi1.Init.Mode = SPI_MODE_MASTER;
-	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
-	hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
-	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi1.Init.CRCPolynomial = 7;
-	if (HAL_SPI_Init(&hspi1) != HAL_OK)
+	hspi2.Instance = SPI2;
+	hspi2.Init.Mode = SPI_MODE_MASTER;
+	hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
+	hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
+	hspi2.Init.NSS = SPI_NSS_SOFT;
+	hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+	hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi2.Init.CRCPolynomial = 7;
+	if (HAL_SPI_Init(&hspi2) != HAL_OK)
 	{
 		Error_Handler();
 	}
 }
 
 static void RCC522_Set_SPISpeed(SPI_HandleTypeDef *hspi){
-	if(hspi1.Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_16){
+	if(hspi2.Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_16){
 		__HAL_SPI_DISABLE(hspi);
 		hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
 		/* 重新初始化SPI */
@@ -99,11 +100,11 @@ void RC522_Write_Register( uint8_t Address, uint8_t data )
 void RC522_SPI_SendByte(uint8_t byte )
 {	 
 	uint8_t data;
-	RCC522_Set_SPISpeed(&hspi1);
+	RCC522_Set_SPISpeed(&hspi2);
 	
-	HAL_SPI_TransmitReceive(&hspi1, &byte, &data, 1, 0xff);
+	HAL_SPI_TransmitReceive(&hspi2, &byte, &data, 1, 0xff);
 	
-	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY)
+	while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY)
 	{
 		
 	}
@@ -112,11 +113,11 @@ void RC522_SPI_SendByte(uint8_t byte )
 uint8_t RC522_SPI_ReadByte(uint8_t byte)
 {
 	uint8_t data;
-	RCC522_Set_SPISpeed(&hspi1);
+	RCC522_Set_SPISpeed(&hspi2);
 	
-	HAL_SPI_TransmitReceive(&hspi1, &byte, &data, 1, 0xff);
+	HAL_SPI_TransmitReceive(&hspi2, &byte, &data, 1, 0xff);
 
-	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY)
+	while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY)
 	{
 		//printf("接收中");
 	}

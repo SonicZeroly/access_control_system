@@ -61,3 +61,4 @@ access_control_system\lv_refr.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\s
 access_control_system\lv_refr.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src\core\../misc/lv_gc.h
 access_control_system\lv_refr.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src\core\../font/lv_font_fmt_txt.h
 access_control_system\lv_refr.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src\core\../extra/others/snapshot/lv_snapshot.h
+access_control_system\lv_refr.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src\core\../widgets/lv_label.h

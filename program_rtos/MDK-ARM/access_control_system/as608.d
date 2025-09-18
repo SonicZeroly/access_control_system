@@ -43,7 +43,7 @@ access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/includ
 access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
 access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
 access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
-access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+access_control_system\as608.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h

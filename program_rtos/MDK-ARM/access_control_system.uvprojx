@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\Code\BSP;..\Code;..\Middlewares\Third_Party\LVGL\LVGL_SRC;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\Code\BSP;..\Code;..\Middlewares\Third_Party\LVGL\LVGL_SRC;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting;..\Middlewares\Third_Party\LVGL\APPS\demos;..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\assets</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -667,6 +667,16 @@
               <FileName>my_lvgl.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Code\my_lvgl.h</FilePath>
+            </File>
+            <File>
+              <FileName>my_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\my_ui.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_ui.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\my_ui.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1747,6 +1757,31 @@
               <FileName>lv_textarea.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src\widgets\lv_textarea.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middlewares/LVGL/demo</GroupName>
+          <Files>
+            <File>
+              <FileName>lv_demo_widgets.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\lv_demo_widgets.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_clothes.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\assets\img_clothes.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_demo_widgets_avatar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\assets\img_demo_widgets_avatar.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_lvgl_logo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\assets\img_lvgl_logo.c</FilePath>
             </File>
           </Files>
         </Group>

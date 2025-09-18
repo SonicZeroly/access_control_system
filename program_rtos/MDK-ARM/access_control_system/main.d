@@ -184,3 +184,7 @@ access_control_system\main.o: ..\Code\my_lvgl.h
 access_control_system\main.o: ..\Code\BSP\tim.h
 access_control_system\main.o: ..\Code\touch.h
 access_control_system\main.o: ..\Code\BSP\ft6336.h
+access_control_system\main.o: ..\Code\my_ui.h
+access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\APPS\demos\lv_demos.h
+access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\APPS\demos\widgets/lv_demo_widgets.h
+access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\APPS\demos\widgets/../lv_demos.h

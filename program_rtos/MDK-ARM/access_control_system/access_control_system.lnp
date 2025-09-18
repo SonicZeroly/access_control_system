@@ -37,6 +37,7 @@
 "access_control_system\process.o"
 "access_control_system\touch.o"
 "access_control_system\my_lvgl.o"
+"access_control_system\my_ui.o"
 "access_control_system\croutine.o"
 "access_control_system\event_groups.o"
 "access_control_system\list.o"
@@ -241,6 +242,10 @@
 "access_control_system\lv_switch.o"
 "access_control_system\lv_table.o"
 "access_control_system\lv_textarea.o"
+"access_control_system\lv_demo_widgets.o"
+"access_control_system\img_clothes.o"
+"access_control_system\img_demo_widgets_avatar.o"
+"access_control_system\img_lvgl_logo.o"
 --library_type=microlib --strict --scatter "access_control_system\access_control_system.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

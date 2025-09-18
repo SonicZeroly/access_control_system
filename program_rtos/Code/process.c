@@ -12,6 +12,11 @@
 #include <string.h>
 #include "dwt.h"
 
+#include "FreeRTOS.h"
+#include "queue.h"
+
+extern QueueHandle_t xQueue_State;
+
 volatile uint8_t open_flag = 0;
 volatile uint8_t pcd_flag = 0;
 volatile uint8_t fp_flag = 0;
@@ -206,9 +211,15 @@ uint8_t fp_scan(fp_flag_t fp_flag){
 			uint8_t res = as608_add_fingerprint(fp_id);
 			if(res == 0){
 				printf("录入指纹成功\r\n");
+				res = 4;
+				xQueueSend(xQueue_State, &res, portMAX_DELAY);
+				return 1;
 			}
 			else{
 				printf("录入指纹失败\r\n");
+				res = 5;
+				xQueueSend(xQueue_State, &res, portMAX_DELAY);
+				return 0;
 			}
 		}
 	}
