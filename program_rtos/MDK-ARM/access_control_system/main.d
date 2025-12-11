@@ -182,6 +182,7 @@ access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\exam
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_indev.h
 access_control_system\main.o: ..\Code\my_lvgl.h
 access_control_system\main.o: ..\Code\BSP\tim.h
+access_control_system\main.o: ..\Code\BSP\data_flash.h
 access_control_system\main.o: ..\Code\touch.h
 access_control_system\main.o: ..\Code\BSP\ft6336.h
 access_control_system\main.o: ..\Code\my_ui.h

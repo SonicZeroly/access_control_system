@@ -2,6 +2,7 @@
 #define __LCD_H__
 
 #include "main.h"
+#include "lvgl.h"
 
 #define u8	uint8_t
 #define u16 uint16_t
@@ -121,6 +122,7 @@ u16 LCD_Read_ID(void);
 /******”¶”√≤„*******/
 void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 color);
 void LCD_ColorFill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t* color_p);
+void LCD_Fill_LVGL(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color_p);
 
 void LCD_DrawLine2(u16 x1, u16 y1, u16 x2, u16 y2, u16 size, u16 color);
 void LCD_ShowString(u16 x,u16 y,u8 size,u8 *p,u8 mode);

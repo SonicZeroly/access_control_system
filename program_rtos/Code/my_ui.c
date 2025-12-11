@@ -6,12 +6,16 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "semphr.h"
 
 #include "process.h"
+#include "data_flash.h"
 
 extern QueueHandle_t xQueue_State;
 extern QueueHandle_t xQueue_PCDFlag;
 extern QueueHandle_t xQueue_FPFlag;
+
+extern SemaphoreHandle_t xMutex_Flash;
 
 ui_screen_info_t screen_manager;
 
@@ -32,6 +36,7 @@ void ui_enter_pw_screen_init(void);
 lv_obj_t* ui_enter_pw;
 lv_obj_t* password_title;
 lv_obj_t* ui_backtomain;
+uint8_t enterword[PASSWORD_MAX_LEN] = {0};
 
 // SCREEN: ui_change_pw
 void ui_change_pw_screen_init(void);
@@ -93,7 +98,7 @@ void _ui_msgbox_popup(lv_obj_t * parent, char* text){
     ui_msgbox = lv_msgbox_create(parent, title, text, NULL, false);
     lv_obj_set_x(ui_msgbox, 0);
     lv_obj_set_y(ui_msgbox, 0);
-    lv_obj_set_size(ui_msgbox, UI_MSGBOX_W, UI_MSGBOX_H);
+    lv_obj_set_size(ui_msgbox, 2, 1);
     lv_obj_set_align(ui_msgbox, LV_ALIGN_CENTER);
 
     //创建动画
@@ -209,20 +214,91 @@ static void ui_event_keyboard_cb(lv_event_t * e)
     lv_obj_t * textarea = (lv_obj_t *)lv_event_get_user_data(e);
     const char * text = lv_btnmatrix_get_btn_text(target, lv_btnmatrix_get_selected_btn(target));
 	
-	static int index = 0;
+	static int enter_len = 0;	//当前输入字符数
     static uint8_t status = 0;
+	int8_t res = 0;
     
     if(strcmp(text, LV_SYMBOL_BACKSPACE) == 0) {
         lv_textarea_del_char(textarea);
-        if(index>0){
-            index--;
+        if(enter_len>0){
+            enter_len--;
         }
     }
     else if(strcmp(text, LV_SYMBOL_NEW_LINE) == 0) {
         // 这里可以添加按下Enter键后的处理逻辑
+		
+		if(screen_manager.page_id == UI_ENTER_PW_SCREEN){
+            if(enter_len == password_len && memcmp(enterword, password, password_len) == 0){
+                lv_textarea_set_text(textarea, "");
+				res = 1;
+				xQueueSend(xQueue_State, &res, portMAX_DELAY);
+				
+            }
+            else{
+				res = 2;
+				xQueueSend(xQueue_State, &res, portMAX_DELAY);
+            }	
+		}
+		
+		else if(screen_manager.page_id == UI_CHANGE_PW_SCREEN){
+            static uint8_t password_temp[PASSWORD_MAX_LEN] = {0};	//暂存密码
+            static uint8_t password_len_temp;
+			static int8_t change_state = 0;
+            switch(change_state){
+                case 0:     //比对原密码
+                    if(enter_len == password_len && memcmp(enterword, password, password_len) == 0){
+                        lv_label_set_text(password_title, "Please Enter New Password");
+                        lv_textarea_set_text(textarea, "");
+                        change_state = 1;
+                    }
+                    else{
+                        lv_label_set_text(password_title, "Error! Please Enter Again");
+                        lv_textarea_set_text(textarea, "");
+                    }
+                    break;
+
+                case 1:     //输入新密码
+                    password_len_temp = enter_len;
+                    for(int i=0; i<enter_len; i++){
+                        password_temp[i] = enterword[i];
+                    }
+                    lv_label_set_text(password_title, "Please Enter New Password Again");
+                    lv_textarea_set_text(textarea, "");
+                    change_state = 2;
+                    break;
+                case 2:     //比对新密码
+                    if(enter_len == password_len_temp && memcmp(enterword, password_temp, password_len_temp) == 0){
+                        //正式修改密码
+                        password_len = enter_len;
+                        for(int i=0; i<enter_len; i++){
+                            password[i] = enterword[i];
+                        }
+						//保存入flash
+						if(xSemaphoreTake(xMutex_Flash, portMAX_DELAY)==pdTRUE){
+							data_flash_write();
+							xSemaphoreGive(xMutex_Flash);
+						}
+						
+                        lv_textarea_set_text(textarea, "");
+                        change_state = 0;
+						res = 1;
+						xQueueSend(xQueue_State, &res, portMAX_DELAY);
+
+                    }
+                    else{
+//                        lv_label_set_text(password_title, "Error! Please Enter Again");
+                        lv_textarea_set_text(textarea, "");
+						res = 2;
+						xQueueSend(xQueue_State, &res, portMAX_DELAY);
+                    }
+                    break;
+            }
+        }
+		enter_len = 0;
     }
     else{
         lv_textarea_add_text(textarea, text);
+		enterword[enter_len++] = *text-'0';
     }
 }
 
@@ -240,17 +316,19 @@ static void ui_timer_cb(lv_timer_t * user_data){
                 _ui_msgbox_popup(ui_enter_pw, "Enter Right");
                 screen_manager.state = -1;
                 timer_cnt = 0;
+				break;
             case 2:     //接收到密码错误时
                 _ui_msgbox_popup(ui_enter_pw, "Enter Wrong");
                 screen_manager.state = -2;
                 timer_cnt = 0;
-                break;
+				break;
 
             case -1:    //退出回到主页
                 if(timer_cnt >= 15){
                     screen_manager.state = 0;
-                    ui_screen_change(&ui_enter_pw, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, ui_main_screen_init);                
+                    ui_screen_change(&ui_main, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, ui_main_screen_init);                
                 }
+				break;
             case -2:    //返回初始化界面
                 if(timer_cnt >= 15){
                     screen_manager.state = 0;
@@ -262,7 +340,34 @@ static void ui_timer_cb(lv_timer_t * user_data){
         }
     }
     else if(screen_manager.page_id == UI_CHANGE_PW_SCREEN){
-        return ;
+		
+        switch(screen_manager.state){
+            case 1:     //修改密码成功时
+                _ui_msgbox_popup(ui_change_pw, "Change password success");
+                screen_manager.state = -1;
+                timer_cnt = 0;
+				break;
+            case 2:     //修改密码错误时
+                _ui_msgbox_popup(ui_change_pw, "Change password wrong");
+                screen_manager.state = -2;
+                timer_cnt = 0;
+				break;
+
+            case -1:    //退出回到主页
+                if(timer_cnt >= 15){
+                    screen_manager.state = 0;
+                    ui_screen_change(&ui_main, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, ui_main_screen_init);                
+                }
+				break;
+            case -2:    //返回初始化界面
+                if(timer_cnt >= 15){
+                    screen_manager.state = 0;
+                    _ui_msgbox_close();
+                }
+                break;  
+            default:
+                break;
+        }
     }
 
     else if(screen_manager.page_id == UI_ADD_FP_SCREEN){
@@ -570,7 +675,7 @@ void ui_enter_pw_screen_init(void){
 
     // 页标题
     password_title = lv_label_create(ui_enter_pw);
-    lv_label_set_text(password_title, "Enter PassWord Page");
+    lv_label_set_text(password_title, "Please Enter Password");
     lv_obj_set_style_text_color(password_title, lv_color_white(), 0);
     lv_obj_set_style_text_font(password_title, &lv_font_montserrat_14, 0);
     lv_obj_align(password_title, LV_ALIGN_TOP_MID, 0, 40);
@@ -636,7 +741,7 @@ void ui_change_pw_screen_init(){
 
     // 页标题
     password_title = lv_label_create(ui_change_pw);
-    lv_label_set_text(password_title, "Change PassWord Page");
+    lv_label_set_text(password_title, "Please Enter Old Password");
     lv_obj_set_style_text_color(password_title, lv_color_white(), 0);
     lv_obj_set_style_text_font(password_title, &lv_font_montserrat_14, 0);
     lv_obj_align(password_title, LV_ALIGN_TOP_MID, 0, 40);

@@ -212,31 +212,18 @@ extern lv_disp_drv_t * disp_drv_p;
 extern SPI_HandleTypeDef hspi1;
 extern volatile uint8_t dma_complete;
 
-//void HAL_DMA_TxCpltCallback(DMA_HandleTypeDef *hdma)
-//{
-//    if (hdma->Instance == DMA2_Stream3) {
-//		//while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);	//DMA传输完成不代表SPI传输完成
-//        LCD_CS_SET;
-//        LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);
+// SPI_DMA传输函数中设置的全满回调函数，最后一个执行的是这个回调函数
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	if(hspi->Instance == SPI1){
+//		dma_complete = 1;
+//		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+//		LCD_CS_SET;		//关闭CS之前必须保证已经处理完
+//		// LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);
+//		
 //        // 通知LVGL传输完成
 //        if (disp_drv_p) {
 //            lv_disp_flush_ready(disp_drv_p);
 //        }
-//    }
-//}
-
-// SPI_DMA传输函数中设置的全满回调函数，最后一个执行的是这个回调函数
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
-	if(hspi->Instance == SPI1){
-		dma_complete = 1;
-		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-		LCD_CS_SET;		//关闭CS之前必须保证已经处理完
-		// LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);
-		
-        // 通知LVGL传输完成
-        if (disp_drv_p) {
-            lv_disp_flush_ready(disp_drv_p);
-        }
 	}
 }
 

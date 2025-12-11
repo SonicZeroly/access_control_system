@@ -92,8 +92,8 @@ void lv_port_disp_init(void)
 
     /* Example for 2) */
     static lv_disp_draw_buf_t draw_buf_dsc_2;
-    static lv_color_t buf_2_1[MY_DISP_HOR_RES * 50];      //原 * 10                  /*A buffer for 10 rows*/
-    static lv_color_t buf_2_2[MY_DISP_HOR_RES * 50];                        /*An other buffer for 10 rows*/
+    static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];      //原 * 10                  /*A buffer for 10 rows*/
+    static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
     lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
 
     /* Example for 3) also set disp_drv.full_refresh = 1 below*/
@@ -143,7 +143,7 @@ static void disp_init(void)
 {
     /*Your code here*/
 	LCD_Init();
-	LCD_direction(0);	//0是竖屏
+	LCD_direction(2);	//0是竖屏
 }
 
 volatile bool disp_flush_enabled = true;
@@ -180,14 +180,12 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 //			LCD_CS_SET;		//关闭CS之前必须保证已经处理完
 //			LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);
 //		}
-//		
-//		uint32_t primask = __get_PRIMASK();
-//		__disable_irq();	// 进入临界区
+
 		disp_drv_p = disp_drv;
 		dma_complete = 0;
-//		__set_PRIMASK(primask);	//退出临界区
 		
 		LCD_ColorFill(area->x1, area->y1, area->x2, area->y2, (uint16_t*)color_p);
+//		LCD_Fill_LVGL(area->x1, area->y1, area->x2, area->y2, color_p);
 		
 //		if(dma_complete==1){
 //			dma_complete = 0;
@@ -199,7 +197,7 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
-//    lv_disp_flush_ready(disp_drv);
+    lv_disp_flush_ready(disp_drv);
 }
 
 /*OPTIONAL: GPU INTERFACE*/

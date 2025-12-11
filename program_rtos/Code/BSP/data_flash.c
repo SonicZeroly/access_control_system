@@ -37,7 +37,7 @@ void data_flash_write(void){
 								(uint64_t)password[3], (uint64_t)password[4], (uint64_t)password[5],
 								(uint64_t)password[6], (uint64_t)password[7], (uint64_t)password_len,
 								(uint64_t)store_cnt, (uint64_t)active_start_addr};
-	Flash_Write(ADDR_FLASH_SECTOR_7, param_index, 3);
+	Flash_Write(ADDR_FLASH_SECTOR_7, param_index, 11);
 }
 
 void data_flash_renew(void){

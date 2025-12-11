@@ -174,8 +174,14 @@ access_control_system\freertos.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\
 access_control_system\freertos.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/extra/widgets/led/lv_led.h
 access_control_system\freertos.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/extra/widgets/imgbtn/lv_imgbtn.h
 access_control_system\freertos.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/extra/widgets/span/lv_span.h
+access_control_system\freertos.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_disp.h
+access_control_system\freertos.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_indev.h
 access_control_system\freertos.o: ..\Code\my_lvgl.h
+access_control_system\freertos.o: ..\Code\my_ui.h
 access_control_system\freertos.o: ..\Code\BSP\as608.h
+access_control_system\freertos.o: ..\Code\BSP\RC522.h
 access_control_system\freertos.o: ..\Code\lcd.h
+access_control_system\freertos.o: ..\Code\BSP\data_flash.h
+access_control_system\freertos.o: ..\Code\BSP\tim.h
 access_control_system\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 access_control_system\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h

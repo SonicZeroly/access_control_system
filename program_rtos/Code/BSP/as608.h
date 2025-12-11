@@ -15,6 +15,14 @@
 #define CharBuffer1		0x01
 #define CharBuffer2		0x02
 
+// Òý½Å½Ó¿Ú
+#define AS608_WAK_PORT		GPIOD
+#define AS608_WAK_PIN		GPIO_PIN_4
+#define AS608_TXD_PORT		GPIOD
+#define AS608_TXD_PIN		GPIO_PIN_6  // UART2_RX
+#define AS608_RXD_PORT	    GPIOD
+#define AS608_RXD_PIN		GPIO_PIN_5  // UART2_TX
+
 extern UART_HandleTypeDef huart2;
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern volatile uint8_t receive_flag;

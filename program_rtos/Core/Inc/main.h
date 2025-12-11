@@ -62,6 +62,9 @@ void Error_Handler(void);
 #define LED_ON		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
 #define LED_OFF		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
 
+#define BUZZER_ON	
+#define BUZZER_OFF
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

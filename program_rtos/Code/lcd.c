@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "font.h"
+#include "lvgl.h"
 
 #define USE_DMA		1
   
@@ -47,11 +48,11 @@ static void SPI_SetSpeed(SPI_HandleTypeDef *hspi, u8 SpeedSet)
 		__HAL_SPI_DISABLE(hspi);
         hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // Fsck = Fpclk/2
     }
-    else if(hspi->Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_32)	// 低速
-    {
-		__HAL_SPI_DISABLE(hspi);
-        hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; // Fsck = Fpclk/16
-    }
+//    else if(hspi->Init.BaudRatePrescaler != SPI_BAUDRATEPRESCALER_32)	// 低速
+//    {
+//		__HAL_SPI_DISABLE(hspi);
+//        hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; // Fsck = Fpclk/16
+//    }
     
     /* 重新初始化SPI */
     if (HAL_SPI_Init(hspi) != HAL_OK)
@@ -91,7 +92,7 @@ void LCD_WR_DATA(u8 data)
 	LCD_RS_SET;
 	u8 rx_dat = 0;
 	u8 tx_dat = data;
-	SPI_SetSpeed(&hspi1, 1);
+	//SPI_SetSpeed(&hspi1, 1);
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
     LCD_CS_SET;
 }
@@ -102,7 +103,7 @@ u8 LCD_RD_DATA(void)
 	u8 tx_dat = 0xFF;
 	LCD_CS_CLR;
 	LCD_RS_SET;
-	SPI_SetSpeed(&hspi1, 0);
+	//SPI_SetSpeed(&hspi1, 0);
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
 //	SPI_SetSpeed(&hspi1, 1);
 	LCD_CS_SET;
@@ -161,7 +162,7 @@ void Lcd_WriteData_16Bit(u16 Data)
 	
 	u8 tx_dat = Data>>8;
 	u8 rx_dat = 0;
-	SPI_SetSpeed(&hspi1, 1);
+	//SPI_SetSpeed(&hspi1, 1);
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
 	tx_dat = Data;
 	HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &rx_dat, 1, 100);
@@ -181,7 +182,7 @@ u16 Lcd_ReadData_16Bit(void)
 	
 	LCD_RS_SET;
 	LCD_CS_CLR;
-	SPI_SetSpeed(&hspi1, 0);
+	//SPI_SetSpeed(&hspi1, 0);
 	for(int i=0; i<4; i++){
 		HAL_SPI_TransmitReceive(&hspi1, &tx_dat, &(rx_dat[i]), 1, 100);
 		//延时等待转换
@@ -192,7 +193,7 @@ u16 Lcd_ReadData_16Bit(void)
 	//g >>= 8;
 	//b >>= 8;
 	r = rx_dat[1], g = rx_dat[2], b = rx_dat[3];
-//	SPI_SetSpeed(&hspi1, 1);
+//	//SPI_SetSpeed(&hspi1, 1);
 	LCD_CS_SET;
 	return Color_To_565(r, g, b);
 }
@@ -628,13 +629,99 @@ void LCD_ColorFill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t* col
 		dma_buffer[i*2 + 1] = temp;
     }
 	
-	SPI_SetSpeed(&hspi1, 1);
+	//SPI_SetSpeed(&hspi1, 1);
 	HAL_SPI_Transmit_DMA(&hspi1, dma_buffer, total_pixels*2);
 //	
 //	LCD_CS_SET;	//到DMA传输结束中断再关闭
 //	LCD_SetWindows(0,0,lcddev.width-1,lcddev.height-1);//恢复窗口设置为全屏	
 	#endif
 	
+}
+
+/**
+ * @brief 填充LCD屏幕指定矩形区域
+ * 使用LVGL库的颜色值填充LCD指定区域。
+ * @param sx 起始X坐标
+ * @param sy 起始Y坐标
+ * @param ex 结束X坐标
+ * @param ey 结束Y坐标
+ * @param color_p 指向要填充的颜色的指针
+ */
+void LCD_Fill_LVGL(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color_p)
+{
+	uint32_t i, j;
+	uint16_t width = ex - sx + 1;	 // 计算填充区域的宽度
+	uint16_t height = ey - sy + 1;	 // 计算填充区域的高度
+	uint32_t Pixel = width * height; // 计算填充区域像素个数
+	LCD_SetWindows(sx, sy, ex, ey);	 // 设置LCD的显示窗口为指定的区域
+
+//	for (i = 0; i < height; i++)
+//	{
+//		for (j = 0; j < width; j++){
+//			Lcd_WriteData_16Bit(color_p->full); // 写入数据
+//		}
+//	}
+
+// 数据分割值, 用于分批发送数据
+#define data_split 8000
+
+	uint8_t data[Pixel * 2]; // 创建一个数组用于存储颜色数据
+	
+	LCD_CS_CLR;
+	LCD_RS_SET;
+	//SPI_SetSpeed(&hspi1, 1);
+
+	for (i = 0; i < Pixel; i++)
+	{
+		// 将颜色数据从16位转换为两个8位的数据
+		data[i * 2] = (color_p->full) >> 8;			// 获取高8位数据
+		data[i * 2 + 1] = (uint8_t)(color_p->full); // 获取低8位数据
+		color_p++;									// 指向下一个颜色值
+
+		// 判断数据量是否大于20000，如果大于则分批发送数据
+		if (Pixel > 20000)
+		{
+			if ((i + 1) % data_split == 0) // 每当达到分割值时
+			{
+				if ((i + 1) == data_split) // 第一批数据发送时
+				{
+					while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY); // 等待SPI1发送完成的信号量
+					HAL_SPI_Transmit_DMA(&hspi1, data, data_split * 2);	  // 以DMA方式发送数据
+				}
+				else // 非第一批数据发送时
+				{
+					while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);								// 等待SPI1发送完成的信号量
+					uint8_t *temp = &data[((uint16_t)((i + 1) / data_split) - 1) * data_split * 2]; // 获取剩余数据
+					HAL_SPI_Transmit_DMA(&hspi1, temp, data_split * 2);										// 以DMA方式发送数据
+				}
+			}
+			else if (((i + 1) % data_split > 0) && ((i + 1) > data_split) && (i == (Pixel - 1))) // 最后一批数据发送时
+			{
+				if ((uint16_t)((i + 1) / data_split) == 1) // 只有一批完整数据时发送第一批后剩余的数据
+				{
+					while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);		 // 等待SPI1发送完成的信号量
+					uint8_t *temp = &data[data_split * 2];				 // 获取剩余数据
+					HAL_SPI_Transmit_DMA(&hspi1, temp, ((i + 1) % data_split) * 2); // 以DMA方式发送数据
+				}
+				else // 发送剩余数据
+				{
+					while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);							  // 等待SPI1发送完成的信号量
+					uint8_t *temp = &data[(uint16_t)((i + 1) / data_split) * data_split * 2]; // 获取剩余数据
+					HAL_SPI_Transmit_DMA(&hspi1, temp, ((i + 1) % data_split) * 2);
+				}
+			}
+		}
+	}
+
+	if (Pixel <= 20000)
+	{
+		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY); // 等待SPI1发送完成的信号量
+		// 要发送的数据小于20000*2字节时一次全部发送
+		HAL_SPI_Transmit_DMA(&hspi1, data, Pixel * 2);
+	}
+
+	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+	LCD_SetWindows(0, 0, lcddev.width - 1, lcddev.height - 1); // 恢复窗口设置为全屏
 }
 
 void GUI_DrawPoint(u16 x,u16 y,u16 color)

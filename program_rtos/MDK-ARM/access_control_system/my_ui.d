@@ -141,6 +141,7 @@ access_control_system\my_ui.o: ../Middlewares/Third_Party/FreeRTOS/Source/includ
 access_control_system\my_ui.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 access_control_system\my_ui.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 access_control_system\my_ui.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+access_control_system\my_ui.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 access_control_system\my_ui.o: ..\Code\process.h
 access_control_system\my_ui.o: ../Core/Inc/main.h
 access_control_system\my_ui.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
@@ -174,3 +175,4 @@ access_control_system\my_ui.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal
 access_control_system\my_ui.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 access_control_system\my_ui.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 access_control_system\my_ui.o: J:\software\Keil_v5_32\ARM\ARMCC\Bin\..\include\stdio.h
+access_control_system\my_ui.o: ..\Code\BSP\data_flash.h

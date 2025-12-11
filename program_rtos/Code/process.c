@@ -24,7 +24,7 @@ volatile uint8_t fp_flag = 0;
 /*************************************************************/
 /*                      密码开门                             */
 /*************************************************************/
-uint8_t password[PASSWORD_MAX_LEN] = {6,3,5,4,2};	//密码
+uint8_t password[PASSWORD_MAX_LEN] = {1,2,3,4,5};	//密码
 uint8_t password_len = 5;
 
 /*************************************************************/
@@ -210,13 +210,13 @@ uint8_t fp_scan(fp_flag_t fp_flag){
 		if(fp_find_idle_id(&fp_id)){	//有空闲ID号
 			uint8_t res = as608_add_fingerprint(fp_id);
 			if(res == 0){
-				printf("录入指纹成功\r\n");
+//				printf("录入指纹成功\r\n");
 				res = 4;
 				xQueueSend(xQueue_State, &res, portMAX_DELAY);
 				return 1;
 			}
-			else{
-				printf("录入指纹失败\r\n");
+			else if(res == 1){
+//				printf("录入指纹失败\r\n");
 				res = 5;
 				xQueueSend(xQueue_State, &res, portMAX_DELAY);
 				return 0;

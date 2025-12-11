@@ -17,7 +17,7 @@ extern float kp;
 extern float ki;
 extern float kd;
 
-void Menu_Flash_Write(void);
-void Menu_Flash_Renew(void);
+void data_flash_write(void);
+void data_flash_renew(void);
 
 #endif

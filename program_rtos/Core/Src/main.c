@@ -33,6 +33,7 @@
 #include "lv_port_indev.h"
 #include "my_lvgl.h"
 #include "tim.h"
+#include "data_flash.h"
 #include "touch.h"
 #include "my_ui.h"
 #include "lv_demos.h"
@@ -108,20 +109,22 @@ int main(void)
 	
 	bsp_Delayms(10);
 	
-	RC522_Init();
-	RC522_Rese();
-	RC522_Config_Type();
+	data_flash_renew();
 	
-	as608_init();
+// 	RC522_Init();
+// 	RC522_Rese();
+// 	RC522_Config_Type();
 	
-	lv_init();
-	lv_port_disp_init();
-	lv_port_indev_init();
-//	page_manager_init(NULL);
-	my_ui_init();
-	//lv_demo_widgets();
+// 	as608_init();
 	
-	MX_TIM7_Init();		//触屏周期中断
+// 	lv_init();
+// 	lv_port_disp_init();
+// 	lv_port_indev_init();
+// //	page_manager_init(NULL);
+// 	my_ui_init();
+//	lv_demo_widgets();
+	
+//	MX_TIM7_Init();		//触屏周期中断
 
   /* USER CODE END 2 */
 
@@ -166,7 +169,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 168;
+  RCC_OscInitStruct.PLL.PLLN = 168;		//原168
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -181,7 +184,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;		//原RCC_HCLK_DIV1
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {

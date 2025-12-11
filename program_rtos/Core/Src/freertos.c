@@ -28,9 +28,15 @@
 #include "dwt.h"
 #include "process.h"
 #include "lvgl.h"
+#include "lv_port_disp.h"
+#include "lv_port_indev.h"
 #include "my_lvgl.h"
+#include "my_ui.h"
 #include "as608.h"
+#include "RC522.h"
 #include "lcd.h"
+#include "data_flash.h"
+#include "tim.h"
 
 #include "semphr.h"
 #include "queue.h"
@@ -54,12 +60,15 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+static const char* TAG = "freertos";
+
 static TaskHandle_t xHandleSysInfo;
 static TaskHandle_t xHandle_TaskPCD;
 static TaskHandle_t xHandle_TaskFP;
 static TaskHandle_t xHandle_TaskLVGL;
 
 static SemaphoreHandle_t xMutex_SPI1;	//互斥量
+SemaphoreHandle_t xMutex_Flash;		//访问flash互斥量
 SemaphoreHandle_t xSemaphore_FPflag;	//和中断通信的信号量
 
 QueueHandle_t xQueue_PCDFlag;
@@ -106,6 +115,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
 	xMutex_SPI1 = xSemaphoreCreateMutex();
+	xMutex_Flash = xSemaphoreCreateMutex();
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -205,7 +215,7 @@ static void vTaskSysInfo(void *pvParameters){
   * @retval 无
   */
 static void vTask_Door(void *pvParameters){
-	
+	printf("The door is opened\r\n");
 }
 
 /**
@@ -214,6 +224,9 @@ static void vTask_Door(void *pvParameters){
   */
 static void vTask_PCD(void *pvParameters){
 	pcd_flag_t flag = PCD_CHECK_EXIST;
+  RC522_Init();
+	RC522_Rese();
+	RC522_Config_Type();
 	while(1){
 		xQueueReceive(xQueue_PCDFlag, &flag, 10);
 //		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
@@ -230,6 +243,7 @@ static void vTask_PCD(void *pvParameters){
   */
 static void vTask_FP(void *pvParameters){
 	fp_flag_t flag = FP_VERIFY;
+  as608_init();
 	while(1){
 		xQueueReceive(xQueue_FPFlag, &flag, 10);
 //		if(xSemaphoreTake(xSemaphore_FPflag, 0)==pdTRUE){
@@ -248,7 +262,13 @@ static void vTask_FP(void *pvParameters){
   */
 extern volatile uint8_t dma_complete;
 static void vTask_LVGL(void *pvParameters){
-	
+  taskENTER_CRITICAL();
+  lv_init();
+	lv_port_disp_init();
+	lv_port_indev_init();
+	my_ui_init();
+	MX_TIM7_Init();		//触屏周期中断
+  taskEXIT_CRITICAL();
 	while(1){
 		
 //		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
@@ -258,6 +278,8 @@ static void vTask_LVGL(void *pvParameters){
 //		}
 	}
 }
+
+
 
 /* USER CODE END Application */
 
