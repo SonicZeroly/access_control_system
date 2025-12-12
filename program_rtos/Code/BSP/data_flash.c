@@ -1,6 +1,9 @@
 #include "stm32f4xx.h"                  // Device header
 #include "data_flash.h"
 #include "process.h"
+#include "log.h"
+
+static const char* TAG = "data_flash";
 
 static uint32_t GetSector(uint32_t Address);
 
@@ -33,6 +36,7 @@ void Flash_Write(uint32_t addr, uint64_t* data, uint8_t data_num){
 }
 
 void data_flash_write(void){
+	LOG_INFO(TAG, "data_flash_write");
 	uint64_t param_index[11] = {(uint64_t)password[0], (uint64_t)password[1], (uint64_t)password[2], 
 								(uint64_t)password[3], (uint64_t)password[4], (uint64_t)password[5],
 								(uint64_t)password[6], (uint64_t)password[7], (uint64_t)password_len,

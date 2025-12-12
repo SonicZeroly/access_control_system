@@ -34,7 +34,7 @@ uint8_t password_len = 5;
 /*************************************************************/
 /*                      M1卡刷门                             */
 /*************************************************************/
-#define ENTRIES_PER_SECTOR		818	//(4096)/5
+ #define ENTRIES_PER_SECTOR		818	//(4096)/5
 
 typedef struct {
     uint8_t status;    // 状态标记:0xFF（空白）、0xAA（有效）、0x55（无效/已删除）
@@ -185,8 +185,9 @@ void pcd_scan( pcd_flag_t flag ){
 bool card_exists(uint8_t* target_id) {
     uint32_t current_addr = active_start_addr;
     card_entry_t entry;
+    LOG_DEBUG(TAG, "active_start_addr is %ld", active_start_addr);
     
-    // 只遍历当前活跃扇区！
+	// 只遍历当前活跃扇区！
     for (int i = 0; i < ENTRIES_PER_SECTOR; i++) {
         W25QXX_BufferRead(&(entry.status), current_addr, 1);
         
@@ -210,6 +211,42 @@ bool card_exists(uint8_t* target_id) {
 }
 
 /**
+ * @brief 清除扇区垃圾数据
+ */
+void sector_garbage_clear(void){
+	uint32_t old_start_addr = 0;
+	if(active_start_addr == 0x0000){
+		old_start_addr = active_start_addr;
+		active_start_addr = 0x1000;
+	}
+	else if(active_start_addr == 0x1000){
+		old_start_addr = active_start_addr;
+		active_start_addr = 0x0000;
+	}
+
+	card_entry_t entry;
+	uint32_t read_addr = old_start_addr, write_addr = active_start_addr;
+	for (int i = 0; i < ENTRIES_PER_SECTOR; i++) {
+		W25QXX_BufferRead(&(entry.status), read_addr, 1);
+		if ((entry.status) == 0xAA){
+			W25QXX_BufferRead(entry.card_id, read_addr+1, 4);
+			W25QXX_BufferWrite(&(entry.status), write_addr, 1);
+			W25QXX_BufferWrite(entry.card_id, write_addr+1, 4);
+			write_addr += 5;
+		}
+		else if((entry.status) == 0xFF){
+			break;
+		}
+		read_addr += 5;
+	}
+
+	// 清理原扇区
+	W25QXX_SectorErase(old_start_addr);
+	LOG_INFO(TAG, "erase old sector");
+	data_flash_write();
+}
+
+/**
   * @brief  添加卡号
   * @param	new_id 卡号
   * @retval 0:已存在卡号 1:找到卡号 2:扇区满了
@@ -219,7 +256,7 @@ uint8_t add_card_id(uint8_t* new_id){
 	if(!card_exists(new_id)){
 		uint32_t current_addr = active_start_addr;
 		card_entry_t entry;
-		
+
 		// 寻找第一个空白位置
 		for (int i = 0; i < ENTRIES_PER_SECTOR; i++) {
 			W25QXX_BufferRead(&(entry.status), current_addr, 1);
@@ -234,10 +271,24 @@ uint8_t add_card_id(uint8_t* new_id){
 			current_addr += 5;
 		}
 		printf("扇区满了\r\n");
+		
+		sector_garbage_clear(); // 触发垃圾回收，腾出空间
+
+		// 重新调用一次，此时就有空间了
+		current_addr = active_start_addr;	// active_start_addr 有变化
+		for (int i = 0; i < ENTRIES_PER_SECTOR; i++) {
+			W25QXX_BufferRead(&(entry.status), current_addr, 1);
+			if (entry.status == 0xFF) {
+				// 找到空白位置，准备写入
+				entry.status = 0xAA;
+				W25QXX_BufferWrite(&(entry.status), current_addr, 1);
+				W25QXX_BufferWrite(new_id, current_addr+1, 4);
+				printf("登记成功\r\n");
+				return 1;
+			}
+			current_addr += 5;
+		}
 		return 2;
-		// 如果执行到这里，说明当前扇区满了！
-//		garbage_collection(); // 触发垃圾回收，腾出空间
-//		add_card(new_id);     // 递归调用一次，此时就有空间了
 	}
 	return 0;
 }
