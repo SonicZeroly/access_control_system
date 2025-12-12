@@ -180,12 +180,13 @@ access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src/extra/widgets/span/lv_span.h
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_disp.h
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting\lv_port_indev.h
-access_control_system\main.o: ..\Code\my_lvgl.h
 access_control_system\main.o: ..\Code\BSP\tim.h
 access_control_system\main.o: ..\Code\BSP\data_flash.h
 access_control_system\main.o: ..\Code\touch.h
 access_control_system\main.o: ..\Code\BSP\ft6336.h
-access_control_system\main.o: ..\Code\my_ui.h
+access_control_system\main.o: ..\Code\UI\my_ui.h
+access_control_system\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
+access_control_system\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\APPS\demos\lv_demos.h
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\APPS\demos\widgets/lv_demo_widgets.h
 access_control_system\main.o: ..\Middlewares\Third_Party\LVGL\APPS\demos\widgets/../lv_demos.h

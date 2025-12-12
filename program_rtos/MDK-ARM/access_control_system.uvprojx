@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\Code\BSP;..\Code;..\Middlewares\Third_Party\LVGL\LVGL_SRC;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting;..\Middlewares\Third_Party\LVGL\APPS\demos;..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\assets</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\Code\BSP;..\Code\UI;..\Code;..\Middlewares\Third_Party\LVGL\LVGL_SRC;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\src;..\Middlewares\Third_Party\LVGL\LVGL_SRC\lvgl\examples\porting;..\Middlewares\Third_Party\LVGL\APPS\demos;..\Middlewares\Third_Party\LVGL\APPS\demos\widgets\assets</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -621,6 +621,36 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Code/UI</GroupName>
+          <Files>
+            <File>
+              <FileName>my_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\UI\my_ui.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_ui.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\UI\my_ui.h</FilePath>
+            </File>
+            <File>
+              <FileName>main_scr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\UI\main_scr.c</FilePath>
+            </File>
+            <File>
+              <FileName>msgbox_scr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\UI\msgbox_scr.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwd_scr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\UI\pwd_scr.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Code</GroupName>
           <Files>
             <File>
@@ -659,24 +689,14 @@
               <FilePath>..\Code\touch.h</FilePath>
             </File>
             <File>
-              <FileName>my_lvgl.c</FileName>
+              <FileName>log.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Code\my_lvgl.c</FilePath>
+              <FilePath>..\Code\log.c</FilePath>
             </File>
             <File>
-              <FileName>my_lvgl.h</FileName>
+              <FileName>log.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\Code\my_lvgl.h</FilePath>
-            </File>
-            <File>
-              <FileName>my_ui.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\my_ui.c</FilePath>
-            </File>
-            <File>
-              <FileName>my_ui.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Code\my_ui.h</FilePath>
+              <FilePath>..\Code\log.h</FilePath>
             </File>
           </Files>
         </Group>

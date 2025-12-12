@@ -22,7 +22,7 @@ Dialog DLL:      TCM.DLL V1.46.0.0
  
 <h2>Project:</h2>
 J:\my_project\00_my_practical_project\access_control_system\program_rtos\MDK-ARM\access_control_system.uvprojx
-Project File Date:  09/18/2025
+Project File Date:  12/12/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'J:\software\Keil_v5_32\ARM\ARMCC\Bin'
@@ -33,32 +33,10 @@ compiling main.c...
 ..\Code\BSP\data_flash.h(23): warning:  #1-D: last line of file ends without a newline
   #endif
 ../Core/Src/main.c: 2 warnings, 0 errors
-compiling freertos.c...
-..\Code\BSP\RC522.h(149): warning:  #1295-D: Deprecated declaration RC522_Config_Type - give arg types
-  void RC522_Config_Type();
-..\Code\lcd.h(130): warning:  #1-D: last line of file ends without a newline
-  #endif  
-..\Code\BSP\data_flash.h(23): warning:  #1-D: last line of file ends without a newline
-  #endif
-../Core/Src/freertos.c(199): warning:  #177-D: variable "temp"  was declared but never referenced
-  	int temp = 0;
-../Core/Src/freertos.c(63): warning:  #177-D: variable "TAG"  was declared but never referenced
-  static const char* TAG = "freertos";
-../Core/Src/freertos.c(65): warning:  #177-D: variable "xHandleSysInfo"  was declared but never referenced
-  static TaskHandle_t xHandleSysInfo;
-../Core/Src/freertos.c(70): warning:  #550-D: variable "xMutex_SPI1"  was set but never used
-  static SemaphoreHandle_t xMutex_SPI1;	//ª•≥‚¡ø
-../Core/Src/freertos.c(197): warning:  #177-D: function "vTaskSysInfo"  was declared but never referenced
-  static void vTaskSysInfo(void *pvParameters){
-../Core/Src/freertos.c(184): warning:  #177-D: function "vTask_LEDTest"  was declared but never referenced
-  static void vTask_LEDTest(void *pvParameters){
-../Core/Src/freertos.c(217): warning:  #177-D: function "vTask_Door"  was declared but never referenced
-  static void vTask_Door(void *pvParameters){
-../Core/Src/freertos.c: 10 warnings, 0 errors
 linking...
-Program Size: Code=186584 RO-data=18600 RW-data=1024 ZI-data=84000  
+Program Size: Code=190276 RO-data=18712 RW-data=1040 ZI-data=84008  
 FromELF: creating hex file...
-"access_control_system\access_control_system.axf" - 0 Error(s), 12 Warning(s).
+"access_control_system\access_control_system.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -82,7 +60,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.4.0
       Include file:  CMSIS\Core\Include\tz_context.h
-Build Time Elapsed:  00:00:09
+Build Time Elapsed:  00:00:10
 </pre>
 </body>
 </html>

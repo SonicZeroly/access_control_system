@@ -8,7 +8,7 @@
 #define PASSWORD_LEN		5
 
 typedef enum{
-	PCD_CHECK_EXIST,
+	PCD_CHECK_EXIST = 0,
 	PCD_ADD_CARD,
 	PCD_DELETE_CARD,
 	
@@ -17,7 +17,7 @@ typedef enum{
 }pcd_flag_t;
 
 typedef enum{
-	FP_VERIFY,
+	FP_VERIFY = 0,
 	FP_ADD,
 	FP_DELETE,
 	

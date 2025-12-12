@@ -254,15 +254,5 @@ void TIM7_IRQHandler(void){
 	HAL_TIM_IRQHandler(&htim7);
 }
 
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-//	if(htim == &htim6){
-//		lv_tick_inc(1);
-////		HAL_IncTick();
-//	}
-//	else if(htim == &htim7){
-//		tp_dev.scan();
-//	}
-//}
-
 
 /* USER CODE END 1 */

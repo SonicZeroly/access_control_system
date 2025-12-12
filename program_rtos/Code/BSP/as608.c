@@ -9,8 +9,11 @@
 #include "queue.h"
 #include "semphr.h"
 
+#include "my_ui.h"
+#include "log.h"
+
 extern SemaphoreHandle_t xSemaphore_FPflag;
-extern QueueHandle_t xQueue_State;
+// extern QueueHandle_t xQueue_State;
 #endif
 
 #define EXIT	0xFF
@@ -21,6 +24,8 @@ extern QueueHandle_t xQueue_State;
 								while(receive_flag != 1);	\
 								receive_flag = 0;
 #define CLOSE_USART2_RECEIVE	CLEAR_BIT(huart2.Instance->CR1, USART_CR1_RE);	//¹Ø±Õ½ÓÊÕ
+
+static const char* TAG = "as608";
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
@@ -656,7 +661,6 @@ uint8_t as608_detection_finger(uint16_t wait_time)	//×¢ÒâÈç¹û²»ÊÇÖĞ¶ÏÖ±½ÓĞŞ¸ÄÕâ¸
 	if(finger_status != FINGER_EXIST && xSemaphoreTake(xSemaphore_FPflag, wait_time*10)==pdTRUE){
 		finger_status = FINGER_EXIST;
 	}
-	
 	if(finger_status == FINGER_EXIST){
 		finger_status = FINGER_NO_EXIST;
 		return 0;
@@ -667,7 +671,7 @@ uint8_t as608_detection_finger(uint16_t wait_time)	//×¢ÒâÈç¹û²»ÊÇÖĞ¶ÏÖ±½ÓĞŞ¸ÄÕâ¸
 
 /***************************************************************************
 ÃèÊö: Ìí¼ÓÖ¸ÎÆ º¯Êı
-·µ»Ø: 0: Â¼ÈëÖ¸ÎÆ³É¹¦        1: Â¼ÈëÖ¸ÎÆÊ§°Ü		2: Î´¼ì²âµ½Ö¸ÎÆ
+·µ»Ø: 0: Â¼ÈëÖ¸ÎÆ³É¹¦        1: Â¼ÈëÖ¸ÎÆÊ§°Ü		2: Î´¼ì²âµ½Ö¸ÎÆ		3: Ö¸ÎÆÒÑ´æÔÚ
 ×¢Òâ: PageID²»Òª¸ø0x00£¬ºóĞø¼ìÑé´úÂëµ±ID==0x00»á·µ»Ø¼ìÑé´íÎó
 ****************************************************************************/
 uint8_t as608_add_fingerprint(uint16_t PageID)
@@ -675,6 +679,14 @@ uint8_t as608_add_fingerprint(uint16_t PageID)
 	uint8_t result;                                        //Â¼ÈëµÄ½á¹û
 	uint8_t add_stage = 1;                        //Â¼ÈëµÄ½×¶Î
 	int8_t temp = 0;
+	uint16_t ID = 0;
+
+	ui_msgbox_info_t info;
+	info.ret_to_main = 0;
+	info.close_msgbox = 0;
+	info.target_scr = UI_ADD_FP_SCREEN;
+
+	static uint8_t queue_send_flag = 1;
 	
 	while(add_stage != EXIT)
 	{
@@ -682,55 +694,96 @@ uint8_t as608_add_fingerprint(uint16_t PageID)
 		{
 			//µÚÒ»½×¶Î »ñÈ¡µÚÒ»´ÎÖ¸ÎÆÍ¼Ïñ ²¢ÇÒÉú³ÉÌØÕ÷Í¼
 			case 1:{
+				// printf("Çë·ÅÖÃÊÖÖ¸\r\n");
+				if(queue_send_flag == 0){
+					LOG_DEBUG(TAG, "queue_send_flag == 0");
+					queue_send_flag = 1;
+					info.msg_in_box = "Please put on your finger";
+					info.has_close_msgbox = 1;
+					xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				}
 
-				printf("Çë·ÅÖÃÊÖÖ¸\r\n");
-				if(as608_detection_finger(800))        return 0x02;        //µÈ´ıÊÖÖ¸°´ÏÂ                        
+				if(as608_detection_finger(100)){//µÈ´ıÊÖÖ¸°´ÏÂ
+					return 2;
+				}                                
 				result = PS_GetImage();        //»ñÈ¡Ö¸ÎÆÍ¼Ïñ
-				if(result) return 1;
+				if(result){
+					return 1;
+				}
 				result = PS_GenChar(CharBuffer1);//Éú³ÉÌØÕ÷Í¼        
-				if(result) return 1;
+				if(result){
+					return 1;
+				}
 				add_stage = 2;                //Ìø×ªµ½µÚ¶ş½×¶Î
-#if use_rtos == 1
-				temp = 2;	//µÚÒ»´ÎÊ¶±ğÖ¸ÎÆºó
-				xQueueSend(xQueue_State, &temp, portMAX_DELAY);
-#endif
 				break;
 			}
 			//µÚ¶ş½×¶Î »ñÈ¡µÚ¶ş´ÎÖ¸ÎÆÍ¼Ïñ ²¢ÇÒÉú³ÉÌØÕ÷Í¼
 			case 2:
-				printf("ÇëÔÙ·ÅÖÃÊÖÖ¸\r\n");
-				if(as608_detection_finger(800))        return 0x02;        //µÈ´ıÊÖÖ¸°´ÏÂ                
+				// printf("ÇëÔÙ·ÅÖÃÊÖÖ¸\r\n");
+				if(queue_send_flag == 1){
+					queue_send_flag = 2;
+					info.msg_in_box = "Please put on again";
+					info.has_close_msgbox = 1;
+					xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				}
+
+				if(as608_detection_finger(800)){//µÈ´ıÊÖÖ¸°´ÏÂ     
+					goto return_2;
+				}
 				result = PS_GetImage();        //»ñÈ¡Ö¸ÎÆÍ¼Ïñ
-				if(result)        return 1;
+				if(result){
+					goto return_1;
+				}
+
 				result = PS_GenChar(CharBuffer2);//Éú³ÉÌØÕ÷Í¼
-				if(result)        return 1;
+				if(result){
+					goto return_1;
+				}
 				add_stage = 3;        //Ìø×ªµ½µÚÈı½×¶Î
 				break;                
 
 			//µÚÈı½×¶Î ±È¶ÔÁ½Ã¶Ö¸ÎÆÌØÕ÷
 			case 3:
 				result = PS_Match();//±È¶ÔÁ½Ã¶Ö¸ÎÆÌØÕ÷
-				if(result)        return 1;
+				if(result)        goto return_1;
 				add_stage = 4;                //Ìø×ªµ½µÚËÄ½×¶Î
 				break;
 
 			//µÚËÄ½×¶Î ÌØÕ÷ºÏ²¢Éú³ÉÄ£°å
 			case 4:
 				result = PS_RegModel();//ÌØÕ÷ºÏ²¢Éú³ÉÄ£°å
-				if(result)        return 1;
+				if(result)        goto return_1;
 				add_stage = 5;                //Ìø×ªµ½µÚÎå½×¶Î                                
 				break;
-
-			//µÚÎå½×¶Î ´¢´æÄ£°å
+			//µÚÎå½×¶Î ¼ì²éÊÇ·ñ´æÔÚ
 			case 5:
+				result = PS_HighSpeedSearch(CharBuffer1,0,99,&ID);
+				if(result){	// ²»´æÔÚ
+					add_stage = 6;
+					break;
+				}
+				else{
+					queue_send_flag = 0;
+					return 3;
+				}
+			//µÚÎå½×¶Î ´¢´æÄ£°å
+			case 6:
 				result = PS_StoreChar(CharBuffer2,PageID);//´¢´æÄ£°å
-				if(result)        return 1;
+				if(result)        goto return_1;
 				add_stage = EXIT;
 				break;
-		}                
+		}
 	}
-	
+	queue_send_flag = 0;
 	return 0;
+
+	return_1:
+	queue_send_flag = 0;
+	return 1;
+
+	return_2:
+	queue_send_flag = 0;
+	return 2;
 }
 
 /***************************************************************************
@@ -751,8 +804,8 @@ uint16_t as608_verify_fingerprint(uint16_t* id_val)
 		{
 			//µÚÒ»½×¶Î »ñÈ¡Ö¸ÎÆÍ¼Ïñ
 			case 1:
-				printf("Çë·ÅÖÃÊÖÖ¸\r\n");                        
-				if(as608_detection_finger(800))        return 0x02;        //µÈ´ıÊÖÖ¸°´ÏÂ                        
+				// printf("Çë·ÅÖÃÊÖÖ¸\r\n");                        
+				if(as608_detection_finger(100))        return 0x00;        //µÈ´ıÊÖÖ¸°´ÏÂ                        
 				result = PS_GetImage();        //»ñÈ¡Ö¸ÎÆÍ¼Ïñ
 				if(result)        verify_stage = EXIT;
 				verify_stage = 2;
@@ -792,26 +845,33 @@ uint16_t as608_verify_fingerprint(uint16_t* id_val)
 
 /***************************************************************************
 ÃèÊö: É¾³ıÖ¸ÎÆ º¯Êı
-·µ»Ø: 0: É¾³ıÖ¸ÎÆ³É¹¦        1: É¾³ıÖ¸ÎÆÊ§°Ü
+·µ»Ø: 0: É¾³ıÖ¸ÎÆ³É¹¦        1: Ã»ÓĞ¸ÃÖ¸ÎÆ			2: É¾³ıÊ§°Ü			3: Î´Íê³É
 ****************************************************************************/
 uint8_t as608_delete_fingerprint(void)
 {
 	uint8_t result;                                        //´æ·Å½á¹û
 	uint16_t ID;                                        //´æ·ÅIDºÅ
 
-	while(as608_verify_fingerprint(&ID)==0){};
-	if(ID == 0X00)
-	{
-			printf("É¾³ıÖ¸ÎÆÊ§°Ü-Ã»ÓĞ¸ÃÖ¸ÎÆ\r\n");
-			return 1;
+	// while(as608_verify_fingerprint(&ID)==0){};
+	result = as608_verify_fingerprint(&ID);
+	if(result == 0){
+		return 3;
+	}
+
+	if(ID == 0X00){
+		printf("É¾³ıÖ¸ÎÆÊ§°Ü-Ã»ÓĞ¸ÃÖ¸ÎÆ\r\n");
+		return 1;
 	}
 	//2-Õë¶ÔIDºÅÂë½øĞĞÉ¾³ı
 	result = PS_DeletChar(ID,1);                //É¾³ıÖ¸ÎÆ IDºÅ 
-	if(result)
-			printf("É¾³ıÖ¸ÎÆÊ§°Ü ID:%d\r\n",ID);
-	else
-			printf("É¾³ıÖ¸ÎÆ³É¹¦ ID:%d\r\n",ID);
-	return 0;
+	if(result){
+		printf("É¾³ıÖ¸ÎÆÊ§°Ü ID:%d\r\n",ID);
+		return 2;
+	}
+	else{
+		printf("É¾³ıÖ¸ÎÆ³É¹¦ ID:%d\r\n",ID);
+		return 0;
+	}		
 }
 
 /***************************************************************************

@@ -30,13 +30,13 @@
 #include "lvgl.h"
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
-#include "my_lvgl.h"
 #include "my_ui.h"
 #include "as608.h"
 #include "RC522.h"
 #include "lcd.h"
 #include "data_flash.h"
 #include "tim.h"
+#include "log.h"
 
 #include "semphr.h"
 #include "queue.h"
@@ -67,14 +67,13 @@ static TaskHandle_t xHandle_TaskPCD;
 static TaskHandle_t xHandle_TaskFP;
 static TaskHandle_t xHandle_TaskLVGL;
 
-static SemaphoreHandle_t xMutex_SPI1;	//互斥量
 SemaphoreHandle_t xMutex_Flash;		//访问flash互斥量
 SemaphoreHandle_t xSemaphore_FPflag;	//和中断通信的信号量
 
 QueueHandle_t xQueue_PCDFlag;
 QueueHandle_t xQueue_FPFlag;
-
-QueueHandle_t xQueue_State;   //向ui_manager_t传送状态
+QueueHandle_t queue_msgbox_info;
+// QueueHandle_t xQueue_State;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -114,7 +113,6 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
-	xMutex_SPI1 = xSemaphoreCreateMutex();
 	xMutex_Flash = xSemaphoreCreateMutex();
   /* USER CODE END RTOS_MUTEX */
 
@@ -131,8 +129,7 @@ void MX_FREERTOS_Init(void) {
   /* add queues, ... */
 	xQueue_PCDFlag = xQueueCreate(5, sizeof(pcd_flag_t));
 	xQueue_FPFlag = xQueueCreate(5, sizeof(fp_flag_t));
-
-  xQueue_State = xQueueCreate(5, sizeof(int8_t));
+  queue_msgbox_info = xQueueCreate(5, sizeof(ui_msgbox_info_t));
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -223,17 +220,19 @@ static void vTask_Door(void *pvParameters){
   * @retval 无
   */
 static void vTask_PCD(void *pvParameters){
-	pcd_flag_t flag = PCD_CHECK_EXIST;
+  taskENTER_CRITICAL();
   RC522_Init();
-	RC522_Rese();
+  taskEXIT_CRITICAL();
+	RC522_Rese();	// 函数里面用到HAL_Delay的别放进临界段
 	RC522_Config_Type();
+	pcd_flag_t flag = PCD_CHECK_EXIST;
+
 	while(1){
-		xQueueReceive(xQueue_PCDFlag, &flag, 10);
-//		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
-			pcd_scan(flag);
-//			xSemaphoreGive(xMutex_SPI1);
-			vTaskDelay(50);
-//		}
+		if(xQueueReceive(xQueue_PCDFlag, &flag, 10) == pdPASS){
+      LOG_DEBUG(TAG, "pcd_flag is %d", flag);
+    }
+    pcd_scan(flag);
+    vTaskDelay(50);
 	}
 }
 
@@ -242,16 +241,26 @@ static void vTask_PCD(void *pvParameters){
   * @retval 无
   */
 static void vTask_FP(void *pvParameters){
-	fp_flag_t flag = FP_VERIFY;
+  taskENTER_CRITICAL();
   as608_init();
+  taskEXIT_CRITICAL();
+	fp_flag_t flag = FP_VERIFY;
+  uint8_t ret = 0;
+
 	while(1){
-		xQueueReceive(xQueue_FPFlag, &flag, 10);
-//		if(xSemaphoreTake(xSemaphore_FPflag, 0)==pdTRUE){
-//			finger_status = FINGER_EXIST;
-//		}
-		
-		fp_scan(flag);
-		
+    BaseType_t res;
+    if(ret == 1 && (flag==FP_ADD)){
+      // 完成add、delete后一直等待UI切换到主页
+      res = xQueueReceive(xQueue_FPFlag, &flag, portMAX_DELAY);
+    }
+    else{
+		  res = xQueueReceive(xQueue_FPFlag, &flag, 10);
+    }
+    if(res == pdPASS){
+      LOG_DEBUG(TAG, "fp_flag is %d", flag);
+    }
+    
+		ret = fp_scan(flag);
 		vTaskDelay(50);
 	}
 }
@@ -260,7 +269,6 @@ static void vTask_FP(void *pvParameters){
   * @brief  UI显示处理任务函数
   * @retval 无
   */
-extern volatile uint8_t dma_complete;
 static void vTask_LVGL(void *pvParameters){
   taskENTER_CRITICAL();
   lv_init();
@@ -270,12 +278,8 @@ static void vTask_LVGL(void *pvParameters){
 	MX_TIM7_Init();		//触屏周期中断
   taskEXIT_CRITICAL();
 	while(1){
-		
-//		if(xSemaphoreTake(xMutex_SPI1, portMAX_DELAY)==pdTRUE){
 			lv_timer_handler();
-//			xSemaphoreGive(xMutex_SPI1);
-			vTaskDelay(5);		//如果有低优先级，一定要把延迟放外面（或者等待互斥量时间写大些）
-//		}
+			vTaskDelay(5);
 	}
 }
 

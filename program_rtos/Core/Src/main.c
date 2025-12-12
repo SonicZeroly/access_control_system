@@ -31,7 +31,6 @@
 #include "lvgl.h"
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
-#include "my_lvgl.h"
 #include "tim.h"
 #include "data_flash.h"
 #include "touch.h"
@@ -108,23 +107,7 @@ int main(void)
 	MX_TIM6_Init();
 	
 	bsp_Delayms(10);
-	
 	data_flash_renew();
-	
-// 	RC522_Init();
-// 	RC522_Rese();
-// 	RC522_Config_Type();
-	
-// 	as608_init();
-	
-// 	lv_init();
-// 	lv_port_disp_init();
-// 	lv_port_indev_init();
-// //	page_manager_init(NULL);
-// 	my_ui_init();
-//	lv_demo_widgets();
-	
-//	MX_TIM7_Init();		//¥•∆¡÷‹∆⁄÷–∂œ
 
   /* USER CODE END 2 */
 

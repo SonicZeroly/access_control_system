@@ -11,11 +11,15 @@
 #include "as608.h"
 #include <string.h>
 #include "dwt.h"
+#include "my_ui.h"
+#include "log.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
 
-extern QueueHandle_t xQueue_State;
+static const char* TAG = "process";
+
+// extern QueueHandle_t xQueue_State;
 
 volatile uint8_t open_flag = 0;
 volatile uint8_t pcd_flag = 0;
@@ -50,35 +54,132 @@ void pcd_scan( pcd_flag_t flag ){
 	uint8_t Card_Type[2] = {0x00,0x00};  	//Mifare One(S50)卡
 	uint8_t card_id[4];   //卡ID
 	uint8_t status;
-	
-	status = PcdRequest(PICC_REQIDL, Card_Type);//寻卡函数，如果成功返回MI_OK，Card_Typr接收卡片的型号代码
 
-	if(status == MI_OK)  
-	{
-		status = PcdAnticoll(card_id);//防冲撞 如果成功返回MI_OK
-		if(status == MI_OK){
-			printf("Card Num:%.2x%.2x%.2x%.2x\r\n",card_id[0],card_id[1],card_id[2],card_id[3]);					
-		}
-		status = PcdSelect(card_id);
-		status = PcdHalt();  //卡片进入休眠状态
+	static uint8_t add_state_flag = 0;
+	static uint8_t del_state_flag = 0;
 		
-		//按照相应标志位执行代码
-		if(flag==PCD_CHECK_EXIST){
-			card_exists(card_id);
-		}
-		else if(flag==PCD_ADD_CARD){
-			add_card_id(card_id);
-		}
-		else if(flag==PCD_DELETE_CARD){
-			delete_card_id(card_id);
+	//按照相应标志位执行代码
+	if(flag==PCD_CHECK_EXIST){
+		add_state_flag = 0;
+		del_state_flag = 0;
+
+		ui_msgbox_info_t info;
+		info.ret_to_main = 0;
+		info.close_msgbox = 1;
+		info.has_close_msgbox = 1;
+		info.target_scr = UI_MAIN_SCREEN;
+
+		status = PcdRequest(PICC_REQIDL, Card_Type);//寻卡函数，如果成功返回MI_OK，Card_Typr接收卡片的型号代码
+
+		if(status == MI_OK){
+			status = PcdAnticoll(card_id);//防冲撞 如果成功返回MI_OK
+			if(status == MI_OK){
+				printf("Card Num:%.2x%.2x%.2x%.2x\r\n",card_id[0],card_id[1],card_id[2],card_id[3]);					
+			}
+			status = PcdSelect(card_id);
+			status = PcdHalt();  //卡片进入休眠状态
+
+			if(card_exists(card_id)){
+				info.msg_in_box = "Verify Success!";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+			}
+			else{
+				info.msg_in_box = "Verify Fail!";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+			}
 		}
 	}
-	bsp_Delayms(10);
+	else if(flag==PCD_ADD_CARD){
+		ui_msgbox_info_t info;
+		info.ret_to_main = 0;
+		info.has_close_msgbox = 1;
+		info.target_scr = UI_ADD_CARD_SCREEN;
+
+		if(add_state_flag == 0){
+			add_state_flag = 1;
+			info.close_msgbox = 0;
+			info.msg_in_box = "Please put on the card...";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+		}
+
+		status = PcdRequest(PICC_REQIDL, Card_Type);//寻卡函数，如果成功返回MI_OK，Card_Typr接收卡片的型号代码
+		if(status == MI_OK){
+			status = PcdAnticoll(card_id);//防冲撞 如果成功返回MI_OK
+			if(status == MI_OK){
+				printf("Card Num:%.2x%.2x%.2x%.2x\r\n",card_id[0],card_id[1],card_id[2],card_id[3]);					
+			}
+			status = PcdSelect(card_id);
+			status = PcdHalt();  //卡片进入休眠状态
+
+			uint8_t ret = add_card_id(card_id);
+			if(ret == 1){
+				add_state_flag = 0;
+				info.close_msgbox = 1;
+				info.msg_in_box = "Add card success";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				vTaskDelay(pdMS_TO_TICKS(1500));
+			}
+			else if(ret == 0){
+				add_state_flag = 0;
+				info.close_msgbox = 1;
+				info.msg_in_box = "Add card fail";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				vTaskDelay(pdMS_TO_TICKS(1500));
+			}
+			else if(ret == 2){
+				add_state_flag = 0;
+				info.close_msgbox = 1;
+				info.msg_in_box = "Add card fail, because sector is filled";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				vTaskDelay(pdMS_TO_TICKS(1500));
+			}
+		}
+	}
+	else if(flag==PCD_DELETE_CARD){
+		ui_msgbox_info_t info;
+		info.ret_to_main = 0;
+		info.has_close_msgbox = 1;
+		info.target_scr = UI_DELETE_CARD_SCREEN;
+
+		if(del_state_flag == 0){
+			del_state_flag = 1;
+			info.close_msgbox = 0;
+			info.msg_in_box = "Please put on the card...";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+		}
+
+		status = PcdRequest(PICC_REQIDL, Card_Type);//寻卡函数，如果成功返回MI_OK，Card_Typr接收卡片的型号代码
+		if(status == MI_OK){
+			status = PcdAnticoll(card_id);//防冲撞 如果成功返回MI_OK
+			if(status == MI_OK){
+				printf("Card Num:%.2x%.2x%.2x%.2x\r\n",card_id[0],card_id[1],card_id[2],card_id[3]);					
+			}
+			status = PcdSelect(card_id);
+			status = PcdHalt();  //卡片进入休眠状态
+			
+			bool ret = delete_card_id(card_id);
+			if(ret){
+				del_state_flag = 0;
+				info.close_msgbox = 1;
+				info.msg_in_box = "Delete card success";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				vTaskDelay(pdMS_TO_TICKS(1500));
+			}
+			else{
+				del_state_flag = 0;
+				info.close_msgbox = 1;
+				info.msg_in_box = "Delete card fail";
+				xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+				vTaskDelay(pdMS_TO_TICKS(1500));
+			}
+		}
+	}
+	vTaskDelay(10);
 }
 
 /**
   * @brief  检查卡号是否存在
-  * @param	uint8_t数组的卡号
+  * @param	target_id 卡号
   * @retval true/false
   */
 bool card_exists(uint8_t* target_id) {
@@ -110,8 +211,8 @@ bool card_exists(uint8_t* target_id) {
 
 /**
   * @brief  添加卡号
-  * @param	uint8_t数组的卡号
-  * @retval true/false
+  * @param	new_id 卡号
+  * @retval 0:已存在卡号 1:找到卡号 2:扇区满了
   */
 uint8_t add_card_id(uint8_t* new_id){
 	//先查找存储中是否存在该卡号
@@ -133,15 +234,17 @@ uint8_t add_card_id(uint8_t* new_id){
 			current_addr += 5;
 		}
 		printf("扇区满了\r\n");
+		return 2;
 		// 如果执行到这里，说明当前扇区满了！
 //		garbage_collection(); // 触发垃圾回收，腾出空间
 //		add_card(new_id);     // 递归调用一次，此时就有空间了
 	}
+	return 0;
 }
 
 /**
   * @brief  删除卡号（只是设置标志而已）
-  * @param	uint8_t数组的卡号
+  * @param	target_id 卡号
   * @retval true/false
   */
 bool delete_card_id(uint8_t* target_id) {
@@ -203,28 +306,97 @@ uint16_t get_card_num(void){
 uint16_t fp_id = 0x01;
 
 uint8_t fp_scan(fp_flag_t fp_flag){
+	static uint8_t has_chech_idle = 0;	// 防止同一次FP_ADD状态中反复检查空闲ID
+	static uint8_t delete_state_flag = 0;	// delete状态下用的标志位
 	if(fp_flag == FP_VERIFY){
-		as608_verify_fingerprint(NULL);
+		has_chech_idle = 0;
+		delete_state_flag = 0;
+		uint16_t temp_id;
+		uint16_t ret = as608_verify_fingerprint(&temp_id);
+
+		ui_msgbox_info_t info;
+		info.ret_to_main = 0;
+		info.close_msgbox = 1;
+		info.has_close_msgbox = 1;
+		info.target_scr = UI_MAIN_SCREEN;
+
+		if(ret == 1){
+			info.msg_in_box = "Verify Success!";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+		}
+		else if(ret == 2){
+			info.msg_in_box = "Verify Fail!";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+		}
 	}
 	else if(fp_flag == FP_ADD){
-		if(fp_find_idle_id(&fp_id)){	//有空闲ID号
-			uint8_t res = as608_add_fingerprint(fp_id);
-			if(res == 0){
-//				printf("录入指纹成功\r\n");
-				res = 4;
-				xQueueSend(xQueue_State, &res, portMAX_DELAY);
-				return 1;
-			}
-			else if(res == 1){
-//				printf("录入指纹失败\r\n");
-				res = 5;
-				xQueueSend(xQueue_State, &res, portMAX_DELAY);
+		if(has_chech_idle == 0){
+			has_chech_idle = 1;
+			if(!fp_find_idle_id(&fp_id)){
 				return 0;
 			}
+			ui_msgbox_info_t info;
+			info.ret_to_main = 0;
+			info.close_msgbox = 0;
+			info.target_scr = UI_ADD_FP_SCREEN;
+			info.msg_in_box = "Please put on your finger";
+			info.has_close_msgbox = 1;
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+		}
+		
+		uint8_t res = as608_add_fingerprint(fp_id);
+		ui_msgbox_info_t info;
+		info.ret_to_main = 1;
+		info.close_msgbox = 1;
+		info.has_close_msgbox = 1;
+		info.target_scr = UI_ADD_FP_SCREEN;
+
+		if(res == 0){
+			LOG_INFO(TAG, "录入指纹成功");
+			info.msg_in_box = "Add finger print success!";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+			return 1;
+		}
+		else if(res == 1){
+			LOG_ERROR(TAG, "录入指纹失败");
+			info.msg_in_box = "Add finger print fail!";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+			return 0;
+		}
+		else if(res == 3){
+			LOG_ERROR(TAG, "指纹已存在");
+			info.msg_in_box = "Finger print has exist!";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
 		}
 	}
 	else if(fp_flag == FP_DELETE){
-		as608_delete_fingerprint();
+		ui_msgbox_info_t info;
+		info.ret_to_main = 0;
+		info.has_close_msgbox = 1;
+		info.target_scr = UI_DELETE_FP_SCREEN;
+
+		if(delete_state_flag == 0){
+			delete_state_flag = 1;
+			info.close_msgbox = 0;
+			info.msg_in_box = "Please put on your finger";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+		}
+		
+		uint8_t res = as608_delete_fingerprint();
+		if(res == 0){
+			delete_state_flag = 0;
+			info.close_msgbox = 1;
+			info.msg_in_box = "Delete finger success";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+			vTaskDelay(1500);
+		}
+		else if(res == 1){
+			delete_state_flag = 0;
+			info.close_msgbox = 1;
+			info.msg_in_box = "Delete finger fail, maybe no exist";
+			xQueueSend(queue_msgbox_info, &info, portMAX_DELAY);
+			vTaskDelay(1500);
+		}
 	}
 }
 
